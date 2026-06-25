@@ -133,8 +133,7 @@ if not st.session_state.get("auth_ok", False):
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("Se connecter", use_container_width=True):
-            auth = st.secrets.get("auth", {})
-            if user == auth.get("username") and pwd == auth.get("password"):
+            if user == st.secrets.get("auth_username") and pwd == st.secrets.get("auth_password"):
                 st.session_state.auth_ok = True
                 st.rerun()
             else:
