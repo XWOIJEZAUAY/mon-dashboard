@@ -1,0 +1,12 @@
+service_account.json
+.streamlit/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+ventes-app/node_modules/
+ventes-app/dist/
+erp system (3).xlsx
+dashboard sales.txt
+*.exe
+.env
