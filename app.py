@@ -112,6 +112,37 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
+# Authentification privée
+# ---------------------------------------------------------------------------
+if not st.session_state.get("auth_ok", False):
+    st.markdown("""
+    <style>
+        .stApp { background: #1C1917 !important; }
+        .block-container { max-width: 380px; margin: 15vh auto; }
+        .login-box { background: #292524; padding: 2rem; border-radius: 12px; border: 1px solid #44403C; }
+        .login-box h1 { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .login-box p { text-align: center; color: #A8A29E; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    </style>
+    <div class="login-box">
+        <div style="text-align:center;font-size:2rem;margin-bottom:0.5rem;">&#128274;</div>
+        <h1>Aurora Nebula</h1>
+        <p>Tableau de bord ERP — accès privé</p>
+    """, unsafe_allow_html=True)
+    user = st.text_input("Nom d'utilisateur", placeholder="admin", label_visibility="collapsed")
+    pwd  = st.text_input("Mot de passe", type="password", placeholder="••••••••", label_visibility="collapsed")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("Se connecter", use_container_width=True):
+            auth = st.secrets.get("auth", {})
+            if user == auth.get("username") and pwd == auth.get("password"):
+                st.session_state.auth_ok = True
+                st.rerun()
+            else:
+                st.error("Identifiants incorrects")
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
+
+# ---------------------------------------------------------------------------
 # Palette « Premium BI » — ambre / or raffiné (sombre)
 # ---------------------------------------------------------------------------
 PRIMARY      = "#F59E0B"
