@@ -1769,10 +1769,13 @@ if section == "Ventes":
         '">'
     )
 
-    try:
-        st.components.v1.html(_react_html, height=1200, scrolling=True)
-    except Exception as _e:
-        st.error(f"Erreur lors du rendu React : {_e}")
+    if _react_html:
+        try:
+            st.components.v1.html(_react_html, height=1200, scrolling=True)
+        except Exception as _e:
+            st.error(f"Erreur lors du rendu React : {_e}")
+    else:
+        st.warning("Application de visualisation non trouvée (ventes-app/dist/index.html).")
 
 # ===========================================================================
 # 2. CLIENTS — Premium BI (9 chartes)
