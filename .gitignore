@@ -3,7 +3,20 @@ service_account.json
 __pycache__/
 *.pyc
 node_modules/
+ventes-app/node_modules/
+ventes-app/src/
+ventes-app/index.html
+ventes-app/package.json
+ventes-app/package-lock.json
+ventes-app/vite.config.js
 erp system (3).xlsx
 dashboard sales.txt
 *.exe
 .env
+streamlit_secrets.txt
+secrets_cloud.txt
+Untitled-*.txt
+app_head_tail.txt
+check_nav.py
+check_version.py
+dump_analysis.py

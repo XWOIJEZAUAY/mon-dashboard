@@ -2,15 +2,6 @@ streamlit>=1.32.0
 pandas>=2.0.0
 numpy>=1.24.0
 plotly>=5.18.0
-matplotlib>=3.7.0
-scipy>=1.10.0
-statsmodels>=0.14.0
-scikit-learn>=1.3.0
 gspread>=5.12.0
 google-auth>=2.23.0
-python-dotenv>=1.0
-openpyxl
-kaleido
-xhtml2pdf
-playwright>=1.40.0
-Pillow>=10.0.0
+requests>=2.31.0
