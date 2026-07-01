@@ -2185,7 +2185,7 @@ if section == "Ventes":
         pi_all["p"] = pd.to_numeric(pi_all["price"], errors="coerce").fillna(0)
         pi_all["cost_total"] = pi_all["q"] * pi_all["p"]
         pu_status = data["Purchases"]["status"].fillna("").str.lower()
-        pu_ok_ids = set(data["Purchases"].loc[pu_status.isin(["confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
+        pu_ok_ids = set(data["Purchases"].loc[pu_status.isin(["pending", "confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
         pi_all = pi_all[pi_all["purchase_id"].isin(pu_ok_ids)]
         _g = pi_all.groupby("product_id").agg(
             cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
@@ -3278,7 +3278,7 @@ if section == "Stock & Achats":
         pi_all_stock["cost_total"] = pi_all_stock["q"] * pi_all_stock["p"]
         pu_status_stock = data["Purchases"]["status"].fillna("").str.lower()
         pu_ok_ids_stock = set(data["Purchases"].loc[pu_status_stock.isin(
-            ["confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
+            ["pending", "confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
         pi_all_stock = pi_all_stock[pi_all_stock["purchase_id"].isin(pu_ok_ids_stock)]
         _g_stock = pi_all_stock.groupby("product_id").agg(
             cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
@@ -3806,7 +3806,7 @@ if section == "Trésorerie":
                 paid_ids = set(alloc_p["purchase_id"].dropna().unique())
                 paid_purchases = pu_dedup[pu_dedup["purchase_id"].isin(paid_ids)].copy() if not pu_dedup.empty else pd.DataFrame()
     if paid_purchases.empty and not pu_dedup.empty:
-        statut_paye = pu_dedup["purchase_status"].fillna("").str.lower().isin(["confirmed", "received", "completed", "paid", "paye", "recu"])
+        statut_paye = pu_dedup["purchase_status"].fillna("").str.lower().isin(["pending", "confirmed", "received", "completed", "paid", "paye", "recu"])
         paid_purchases = pu_dedup[statut_paye].copy()
         paid_amount = paid_purchases["purchase_total"].sum()
 
@@ -3873,7 +3873,7 @@ if section == "Trésorerie":
                 prev_dec_pay_ok = prev_pay_ok.merge(prev_alloc_by_pay_p, left_on="id", right_on="payment_id", how="inner")
                 prev_paid_amount = prev_dec_pay_ok["amount_applied"].sum()
     if prev_paid_amount == 0 and not prev_pu_dedup.empty:
-        prev_statut_paye = prev_pu_dedup["purchase_status"].fillna("").str.lower().isin(["confirmed", "received", "completed", "paid", "paye", "recu"])
+        prev_statut_paye = prev_pu_dedup["purchase_status"].fillna("").str.lower().isin(["pending", "confirmed", "received", "completed", "paid", "paye", "recu"])
         prev_paid_amount = prev_pu_dedup.loc[prev_statut_paye, "purchase_total"].sum()
     prev_rf = in_period(data["Refunds"], "created_at", prev_var_start, prev_var_end) if "Refunds" in data else pd.DataFrame()
     prev_refunds = prev_rf["total"].sum() if not prev_rf.empty else 0
@@ -3977,7 +3977,7 @@ if section == "Trésorerie":
     ca_periode = sales_period[sales_period["total"] > 0]["total"].sum()
     ca_annualise = ca_periode * ratio_annuel
     pu_periode = in_period(data["Purchases"], "created_at", start_dt, end_dt)
-    pu_periode_ok = pu_periode[pu_periode["status"].fillna("").str.lower().isin(["confirmed", "received", "completed", "paid", "paye", "recu"])]
+    pu_periode_ok = pu_periode[pu_periode["status"].fillna("").str.lower().isin(["pending", "confirmed", "received", "completed", "paid", "paye", "recu"])]
     achats_periode = pu_periode_ok["total"].sum()
     achats_annualises = achats_periode * ratio_annuel
     bfr_annuel = (dso_moy * ca_annualise / 365) - (dpo_moy * achats_annualises / 365)
