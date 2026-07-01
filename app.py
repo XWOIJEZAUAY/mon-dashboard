@@ -21,13 +21,14 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 import json
+import os
 
 # Configuration
 SHEET_ID = "1kLvCbD-uNMD-ljwZOj8ZtcMu_-irjRp_TMcVNncAlP0"
 SERVICE_ACCOUNT_FILE = Path(__file__).parent / "service_account.json"
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
-    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
 ]
 # Cross-filtering state
 if "filtres" not in st.session_state:
@@ -101,6 +102,28 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Hauteurs compactes globales (Power BI style)
+_CHART_H = 125
+_KPI_H = 68
+
+# Détection navigateur + variables CSS
+st.markdown("""
+<script>
+(function() {
+    var isCloud = window.location.hostname.includes('streamlit.app') ||
+                  !(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1');
+    if (isCloud) {
+        document.documentElement.classList.add('streamlit-cloud');
+        document.documentElement.style.setProperty('--kpi-h', '62px');
+        document.documentElement.style.setProperty('--chart-h', '115px');
+    } else {
+        document.documentElement.style.setProperty('--kpi-h', '68px');
+        document.documentElement.style.setProperty('--chart-h', '125px');
+    }
+})();
+</script>
+""", unsafe_allow_html=True)
 
 # Authentification privée
 if not st.session_state.get("auth_ok", False):
@@ -379,8 +402,10 @@ APP_CSS = f"""
     }}
     
     .block-container {{
-        max-width: 1500px;
-        padding-top: 0.6rem;
+        max-width: 100%;
+        padding-top: 0.3rem;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }}
     .vba-header {{
         background: linear-gradient(120deg, #0C4A8C 0%, #118DFF 40%, #0E6FD8 100%);
@@ -459,13 +484,48 @@ APP_CSS = f"""
         row-gap: 0rem !important;
     }}
     .stHorizontalBlock {{
-        gap: 12px !important;
+        gap: 8px !important;
+    }}
+    .stHorizontalBlock > div {{
+        min-width: 0 !important;
     }}
     div[data-testid="stMarkdownContainer"] {{
         margin: 0 !important;
         padding: 0 !important;
         line-height: 1 !important;
         min-height: 0 !important;
+    }}
+    div[data-testid="stVerticalBlock"] > div > div[data-testid="stElementContainer"] {{
+        padding: 0 !important; margin: 0 !important;
+    }}
+    div[data-testid="stVerticalBlock"] > div {{
+        gap: 0 !important;
+    }}
+    div[data-testid="column"] {{
+        padding: 2px !important;
+    }}
+    div[data-testid="stAppViewBlockContainer"] {{
+        padding-top: 0.3rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }}
+    div[data-testid="stAppViewContainer"] > section {{
+        padding-top: 0 !important;
+    }}
+    div[data-testid="stHeader"] {{
+        display: none !important;
+    }}
+    .stApp header {{
+        display: none !important;
+    }}
+    .main > div:first-child > div:first-child {{
+        padding: 4px 8px !important;
+    }}
+    div.row-widget {{
+        padding: 0 !important; margin: 0 !important;
+    }}
+    div[data-testid="stElementContainer"] {{
+        padding: 0 !important; margin: 0 !important;
     }}
     .stRow:has([data-testid="stMarkdownContainer"]) + .stRow:has([data-testid="stPlotlyChart"]) {{
         margin-top: -6px !important;
@@ -486,12 +546,16 @@ APP_CSS = f"""
     .kpi-card {{
         background: {CARD};
         border: 1px solid {GRID};
-        border-radius: 14px;
-        padding: 10px 14px;
+        border-radius: 8px;
+        padding: 2px 8px;
         position: relative;
         overflow: hidden;
         text-align: center;
         transition: all 0.2s ease;
+        height: var(--kpi-h, 68px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }}
     .kpi-card::before {{
         content: "";
@@ -508,27 +572,31 @@ APP_CSS = f"""
     }}
     .kpi-head {{
         display: flex; align-items: center; justify-content: center;
-        gap: 6px; margin-bottom: 4px;
+        gap: 4px; margin-bottom: 0;
+        line-height: 1;
     }}
     .kpi-icon {{
-        font-size: 16px; font-weight: 700; color: {PRIMARY};
+        font-size: 13px; font-weight: 700; color: {PRIMARY};
     }}
     .kpi-title {{
-        font-size: 10px; font-weight: 500; color: {MUTED};
-        letter-spacing: 0.5px; text-transform: uppercase;
+        font-size: 9px; font-weight: 500; color: {MUTED};
+        letter-spacing: 0.3px; text-transform: uppercase;
         white-space: nowrap;
     }}
     .kpi-value {{
-        font-size: 18px; font-weight: 700; color: {INK};
+        font-size: 15px; font-weight: 700; color: {INK};
         font-family: 'Inter','Aptos',sans-serif;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
+        line-height: 1.15;
+        margin-top: 0;
     }}
     .kpi-sub {{
-        font-size: 11px; font-weight: 600;
-        margin-top: 2px;
+        font-size: 9px; font-weight: 600;
+        margin-top: 0;
         display: flex; align-items: center; justify-content: center; gap: 4px;
-        min-height: 16px;
+        min-height: 12px;
+        line-height: 1;
     }}
     .kpi-delta-pos {{ color: #10B981; }}
     .kpi-delta-neg {{ color: #EF4444; }}
@@ -536,12 +604,12 @@ APP_CSS = f"""
     .cli-kpi {{
         background: {CL_CARD} !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
-        border-radius: 14px !important;
-        padding: 12px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
-    }}
-    .cli-kpi::before {{
-        display: none !important;
+        border-radius: 8px !important;
+        padding: 2px 8px !important;
+        height: var(--kpi-h, 68px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }}
     .cli-kpi:hover {{
         border-color: rgba(99,102,241,0.3) !important;
@@ -549,12 +617,12 @@ APP_CSS = f"""
     .tr-kpi {{
         background: #1E293B !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
-        border-radius: 14px !important;
-        padding: 12px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
-    }}
-    .tr-kpi::before {{
-        display: none !important;
+        border-radius: 8px !important;
+        padding: 2px 8px !important;
+        height: var(--kpi-h, 68px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }}
     .tr-kpi:hover {{
         border-color: rgba(6,182,212,0.3) !important;
@@ -562,9 +630,12 @@ APP_CSS = f"""
     .st-kpi {{
         background: #1E293B !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
-        border-radius: 14px !important;
-        padding: 12px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+        border-radius: 8px !important;
+        padding: 2px 8px !important;
+        height: var(--kpi-h, 68px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }}
     .st-kpi::before {{
         display: none !important;
@@ -658,12 +729,12 @@ APP_CSS = f"""
     .chart-card {{
         background: linear-gradient(160deg, #302C28 0%, {CARD} 45%, #23201E 100%);
         border: 1px solid rgba(68,64,60,0.35);
-        border-radius: 14px;
-        padding: 8px 12px 6px;
+        border-radius: 8px;
+        padding: 2px 6px 2px;
         position: relative;
         overflow: hidden;
         box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 8px -4px rgba(0,0,0,0.2);
-        margin-bottom: 8px;
+        margin-bottom: 2px;
         transition: border-color .2s ease;
     }}
     .chart-card::before {{
@@ -682,41 +753,45 @@ APP_CSS = f"""
         letter-spacing: 0.2px;
     }}
     .chart-title {{
-        display: flex; align-items: center; gap: 6px;
-        margin: 0 0 -4px;
-        padding: 2px 10px;
+        display: flex; align-items: center; gap: 3px;
+        margin: 0;
+        padding: 0 6px;
         background: rgba(41,37,36,0.4);
         border: 1px solid rgba(68,64,60,0.2);
-        border-radius: 8px 8px 0 0;
+        border-radius: 6px 6px 0 0;
         position: relative;
         overflow: hidden;
+        min-height: 0;
     }}
     .chart-title .accent {{
-        width: 3px; min-height: 20px; border-radius: 3px;
+        width: 3px; min-height: 14px; border-radius: 3px;
         background: linear-gradient(180deg, {ACCENT2}, {PRIMARY} 40%, {KPI_ACCENT_TO});
         flex-shrink: 0;
     }}
     .chart-title .ct-main {{
-        font-size: 11px; font-weight: 700; color: {INK};
-        letter-spacing: -0.2px; line-height: 1.2;
+        font-size: 9px; font-weight: 700; color: {INK};
+        letter-spacing: -0.2px; line-height: 1;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }}
     .chart-title .ct-sub {{
-        font-size: 9px; font-weight: 600; color: #D6D3D1;
-        letter-spacing: 0.3px; margin-top: 1px;
+        font-size: 7px; font-weight: 600; color: #D6D3D1;
+        letter-spacing: 0.3px; margin-top: 0;
         text-transform: uppercase;
     }}
     div[data-testid="stPlotlyChart"] {{
         background: linear-gradient(160deg, #302C28 0%, {CARD} 45%, #23201E 100%);
         border: 1px solid rgba(68,64,60,0.3);
         border-top: none;
-        border-radius: 0 0 8px 8px;
-        padding: 4px 4px 2px;
-        margin-bottom: 2px !important;
+        border-radius: 0 0 6px 6px;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
         margin-top: 0 !important;
         position: relative;
         overflow: hidden;
         box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 8px -4px rgba(0,0,0,0.2);
+    }}
+    div[data-testid="stPlotlyChart"] > div > div > svg {{
+        display: block;
     }}
     div[data-testid="stPlotlyChart"]:hover {{
         border-color: rgba(245,158,11,0.08);
@@ -964,22 +1039,22 @@ APP_CSS = f"""
         opacity: 1 !important;
     }}
     .section-title {{
-        display: flex; align-items: center; gap: 8px;
-        margin: 10px 0 6px;
-        padding: 6px 12px;
+        display: flex; align-items: center; gap: 6px;
+        margin: 4px 0 2px;
+        padding: 2px 8px;
         background: rgba(30,41,59,0.6);
         border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 10px;
+        border-radius: 8px;
         position: relative;
         overflow: hidden;
     }}
     .section-title::before {{
         content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
         background: linear-gradient(180deg, #118DFF, #0E6FD8);
-        border-radius: 10px 0 0 10px;
+        border-radius: 8px 0 0 8px;
     }}
     .section-title .text {{
-        font-size: 12px; font-weight: 700; color: {INK};
+        font-size: 11px; font-weight: 700; color: {INK};
         letter-spacing: 0.2px;
         text-transform: uppercase;
     }}
@@ -989,6 +1064,84 @@ APP_CSS = f"""
         padding-top: 2px !important;
         padding-bottom: 2px !important;
     }}
+    /* Streamlit Cloud - overrides ultra compacts */
+    .streamlit-cloud .block-container {{
+        padding-top: 0 !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }}
+    .streamlit-cloud .kpi-card {{
+        height: 62px !important;
+        padding: 2px 6px !important;
+    }}
+    .streamlit-cloud .kpi-value {{
+        font-size: 12px !important;
+    }}
+    .streamlit-cloud .kpi-title {{
+        font-size: 7px !important;
+    }}
+    .streamlit-cloud .kpi-sub {{
+        font-size: 7px !important;
+        min-height: 8px !important;
+    }}
+    .streamlit-cloud .kpi-head {{
+        gap: 2px !important;
+    }}
+    .streamlit-cloud .cli-kpi,
+    .streamlit-cloud .tr-kpi,
+    .streamlit-cloud .st-kpi {{
+        height: 62px !important;
+        padding: 2px 6px !important;
+    }}
+    .streamlit-cloud .chart-card {{
+        padding: 1px 4px 1px !important;
+        margin-bottom: 1px !important;
+    }}
+    .streamlit-cloud .chart-title {{
+        padding: 0 6px !important;
+        min-height: 0 !important;
+    }}
+    .streamlit-cloud .chart-title .ct-main {{
+        font-size: 8px !important;
+    }}
+    .streamlit-cloud .chart-title .accent {{
+        min-height: 12px !important;
+    }}
+    .streamlit-cloud .vba-header {{
+        padding: 3px 10px !important;
+        margin-bottom: 4px !important;
+    }}
+    .streamlit-cloud .vba-header .title {{
+        font-size: 13px !important;
+    }}
+    .streamlit-cloud .stTabs [data-baseweb="tab-list"] {{
+        padding: 3px !important;
+    }}
+    .streamlit-cloud .stTabs [data-baseweb="tab"] {{
+        padding: 4px 12px !important;
+        font-size: 11px !important;
+    }}
+    .streamlit-cloud div[data-testid="stMetric"] {{
+        padding: 3px 6px !important;
+    }}
+    .streamlit-cloud .section-title {{
+        padding: 3px 8px !important;
+        margin: 4px 0 2px !important;
+    }}
+    .streamlit-cloud .section-title .text {{
+        font-size: 10px !important;
+    }}
+    .streamlit-cloud .stSelectbox label {{
+        font-size: 10px !important;
+    }}
+    .streamlit-cloud .stSelectbox div[data-baseweb="select"] > div {{
+        min-height: 32px !important;
+    }}
+    .streamlit-cloud div[data-testid="stSidebar"] > div > div:first-child > div:first-child {{
+        padding: 8px 10px 10px !important;
+    }}
+
+
     @media print {{
         @page {{ size: A4 landscape; margin: 8mm; }}
         body {{ background: #FFFFFF !important; }}
@@ -1017,17 +1170,18 @@ APP_CSS = f"""
 st.markdown(APP_CSS, unsafe_allow_html=True)
 
 # Fonction d'espacement
-def spacer(height: int = 15):
+def spacer(height: int = 8):
     st.markdown(f"<div style='height:{height}px'></div>", unsafe_allow_html=True)
 
 # Style des graphiques
-def style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
+def style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
+    h = height if height is not None else _CHART_H
     fig.update_layout(
-        height=height,
+        height=h,
         paper_bgcolor=CARD,
         plot_bgcolor=CARD,
-        font=dict(family="Inter, sans-serif", size=10, color=INK),
-        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
+        font=dict(family="Inter, sans-serif", size=9, color=INK),
+        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
                     font=dict(size=9, color=MUTED),
@@ -1054,7 +1208,7 @@ def style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Fig
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
+        textfont=dict(size=10, color=INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -1069,24 +1223,24 @@ def style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Fig
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=2, shape="spline", smoothing=0.6),
-        marker=dict(size=4, line=dict(width=1, color="#292524")),
+        line=dict(width=1.5, shape="spline", smoothing=0.6),
+        marker=dict(size=3, line=dict(width=0.5, color="#292524")),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color="#292524", width=1.5)),
+        textfont=dict(size=10, color=INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color="#292524", width=1)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color="#292524", width=1)),
-        textfont=dict(size=13, color=INK),
+        marker=dict(line=dict(color="#292524", width=0.5)),
+        textfont=dict(size=10, color=INK),
     )
     return fig
 
@@ -1178,6 +1332,230 @@ def _coerce(df: pd.DataFrame, sheet: str) -> pd.DataFrame:
             df[col] = pd.to_datetime(df[col], errors="coerce")
     return df
 
+# ---------------------------------------------------------------------------
+# Détection d'anomalies
+# ---------------------------------------------------------------------------
+def detect_anomalies(d: Dict[str, pd.DataFrame]) -> pd.DataFrame:
+    rows = []
+    def add(sheet, atype, severity, desc, count, sample_ids=""):
+        rows.append(dict(Sheet=sheet, Type=atype, Severity=severity,
+                         Description=desc, Count=count, Sample_IDs=str(sample_ids)[:200]))
+
+    # ── Sales ──
+    S = d.get("Sales")
+    if S is not None and not S.empty:
+        if all(c in S.columns for c in ["total","subtotal","tax","discount"]):
+            m = abs(S["total"] - (S["subtotal"] + S["tax"] - S["discount"])) > 0.01
+            if m.any():
+                ids = S.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Sales","Total mismatch","High",f"Total ≠ sous-total+taxe−remise",int(m.sum()),", ".join(ids))
+        if "total" in S.columns:
+            m = S["total"] <= 0
+            if m.any():
+                ids = S.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Sales","Total ≤ 0","High","Vente avec total nul/négatif",int(m.sum()),", ".join(ids))
+        if "client_id" in S.columns:
+            m = S["client_id"].isna() | (S["client_id"].astype(str).str.strip() == "")
+            if m.any():
+                ids = S.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Sales","Client manquant","High","Vente sans client",int(m.sum()),", ".join(ids))
+        if "reference" in S.columns:
+            dups = S[S["reference"].duplicated(keep=False)]
+            if not dups.empty:
+                ids = dups["id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Sales","Réf. dupliquée","Medium","Référence vente en double",int(dups["id"].nunique()),", ".join(ids))
+
+    # ── SaleItems ──
+    SI = d.get("SaleItems")
+    if SI is not None and not SI.empty:
+        if all(c in SI.columns for c in ["quantity","price","total"]):
+            calc = SI["quantity"] * SI["price"]
+            m = abs(SI["total"] - calc) > 0.01
+            if m.any():
+                ids = SI.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("SaleItems","Total mismatch","High","Total ≠ qte×prix",int(m.sum()),", ".join(ids))
+        for col in ["quantity","price","total"]:
+            if col in SI.columns:
+                m = SI[col] < 0
+                if m.any():
+                    ids = SI.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:5]
+                    add("SaleItems",f"{col} négatif","High",f"{col} négatif dans les lignes de vente",int(m.sum()),", ".join(ids))
+        if "sale_id" in SI.columns:
+            m = SI["sale_id"].isna() | (SI["sale_id"].astype(str).str.strip() == "")
+            if m.any():
+                ids = SI.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("SaleItems","Vente manquante","High","Ligne sans sale_id",int(m.sum()),", ".join(ids))
+        if S is not None and not S.empty and "sale_id" in SI.columns and "id" in S.columns:
+            valid = set(S["id"].dropna().astype(int))
+            m = ~SI["sale_id"].dropna().astype(int).isin(valid)
+            if m.any():
+                ids = SI.loc[m[m].index, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("SaleItems","Orphelin","High","Ligne liée à une vente inexistante",int(m.sum()),", ".join(ids))
+
+    # ── StockMovements ──
+    SM = d.get("StockMovements")
+    if SM is not None and not SM.empty:
+        if "quantity" in SM.columns:
+            m = SM["quantity"] < 0
+            if m.any():
+                ids = SM.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("StockMovements","Qte négative","High","Mouvement de stock avec qte négative",int(m.sum()),", ".join(ids))
+        if "type" in SM.columns:
+            valid = {"in","out","entry","exit","positive","negative","adjustment","correction","inventory","entrée","sortie","transfert","transfer","production","perte","perte","casse","retour"}
+            m = ~SM["type"].astype(str).str.lower().str.strip().isin(valid)
+            if m.any():
+                vals = SM.loc[m, "type"].unique().tolist()[:10]
+                add("StockMovements","Type inconnu","Medium","Type de mouvement non standard",int(m.sum()),", ".join(str(v) for v in vals))
+        if "product_id" in SM.columns and "id" in SM.columns and "Products" in d:
+            P = d["Products"]
+            if P is not None and not P.empty and "id" in P.columns:
+                valid_p = set(P["id"].dropna().astype(int))
+                m = ~SM["product_id"].dropna().astype(int).isin(valid_p)
+                if m.any():
+                    ids = SM.loc[m[m].index, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                    add("StockMovements","Produit inconnu","High","Mouvement sur produit inexistant",int(m.sum()),", ".join(ids))
+
+    # ── Purchases / PurchaseItems ──
+    for sname in ["Purchases","PurchaseItems"]:
+        df = d.get(sname)
+        if df is not None and not df.empty:
+            for col in ["quantity","price","total"]:
+                if col in df.columns:
+                    m = df[col] < 0
+                    if m.any():
+                        ids = df.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:5]
+                        add(sname,f"{col} négatif","High",f"{col} négatif dans {sname}",int(m.sum()),", ".join(ids))
+
+    # ── Payments ──
+    P = d.get("Payments")
+    if P is not None and not P.empty and S is not None and not S.empty:
+        if all(c in P.columns for c in ["amount","sale_id"]) and all(c in S.columns for c in ["id","total"]):
+            merged = P.merge(S[["id","total"]].rename(columns={"id":"sale_id"}), on="sale_id", how="left")
+            m = merged["total"].notna() & (abs(merged["amount"] - merged["total"]) > 0.01)
+            if m.any():
+                ids = P.loc[m[m].index, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Payments","Montant mismatch","High","Paiement ≠ total vente",int(m.sum()),", ".join(ids))
+        if "sale_id" in P.columns and "id" in S.columns:
+            valid = set(S["id"].dropna().astype(int))
+            m = ~P["sale_id"].dropna().astype(int).isin(valid)
+            if m.any():
+                ids = P.loc[m[m].index, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Payments","Orphelin","High","Paiement sur vente inexistante",int(m.sum()),", ".join(ids))
+
+    # ── Products ──
+    PR = d.get("Products")
+    if PR is not None and not PR.empty:
+        if "price" in PR.columns:
+            m = PR["price"] < 0
+            if m.any():
+                ids = PR.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Products","Prix négatif","High","Produit avec prix négatif",int(m.sum()),", ".join(ids))
+        if all(c in PR.columns for c in ["stock","min_stock"]):
+            m = PR["stock"] < PR["min_stock"]
+            if m.any():
+                ids = PR.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Products","Stock < seuil","Medium","Stock sous le seuil minimum",int(m.sum()),", ".join(ids))
+        if "stock" in PR.columns:
+            m = PR["stock"] < 0
+            if m.any():
+                ids = PR.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Products","Stock négatif","High","Stock négatif",int(m.sum()),", ".join(ids))
+        if all(c in PR.columns for c in ["stock","security_stock"]):
+            m = PR["stock"] <= PR["security_stock"]
+            if m.any():
+                ids = PR.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Products","Stock critique","Medium","Stock ≤ seuil de sécurité",int(m.sum()),", ".join(ids))
+
+    # ── Devis ──
+    D = d.get("Devis")
+    if D is not None and not D.empty:
+        if "status" in D.columns and "expires_at" in D.columns:
+            now = pd.Timestamp.now()
+            D_exp = D.copy()
+            D_exp["expires_at"] = pd.to_datetime(D_exp["expires_at"], errors="coerce")
+            m = (D_exp["status"].str.lower().isin(["pending","en_attente","brouillon","draft"])) & (D_exp["expires_at"] < now)
+            if m.any():
+                ids = D.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Devis","Expiré","Medium","Devis en attente mais expiré",int(m.sum()),", ".join(ids))
+        if all(c in D.columns for c in ["total","subtotal","tax","discount"]):
+            m = abs(D["total"] - (D["subtotal"] + D["tax"] - D["discount"])) > 0.01
+            if m.any():
+                ids = D.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Devis","Total mismatch","High","Devis total ≠ sous-total+taxe−remise",int(m.sum()),", ".join(ids))
+
+    # ── Clients ──
+    C = d.get("Clients")
+    if C is not None and not C.empty:
+        if "email" in C.columns:
+            m = C["email"].isna() | (C["email"].astype(str).str.strip() == "")
+            if m.any():
+                ids = C.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Clients","Email manquant","Low","Client sans email",int(m.sum()),", ".join(ids))
+        if "phone" in C.columns:
+            m = C["phone"].isna() | (C["phone"].astype(str).str.strip() == "")
+            if m.any():
+                ids = C.loc[m, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Clients","Tél. manquant","Low","Client sans téléphone",int(m.sum()),", ".join(ids))
+
+    # ── Refunds ──
+    RF = d.get("Refunds")
+    if RF is not None and not RF.empty and S is not None and not S.empty:
+        if "sale_id" in RF.columns and "id" in S.columns:
+            valid = set(S["id"].dropna().astype(int))
+            m = ~RF["sale_id"].dropna().astype(int).isin(valid)
+            if m.any():
+                ids = RF.loc[m[m].index, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Refunds","Vente inexistante","High","Remboursement sur vente introuvable",int(m.sum()),", ".join(ids))
+
+    # ── Sales sans items ──
+    if S is not None and not S.empty and SI is not None and not SI.empty:
+        if "id" in S.columns and "sale_id" in SI.columns:
+            with_items = set(SI["sale_id"].dropna().astype(int))
+            orphan = S[~S["id"].dropna().astype(int).isin(with_items)]
+            if not orphan.empty:
+                ids = orphan["id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("Sales","Sans article","Medium","Vente sans aucune ligne d'article",len(orphan),", ".join(ids))
+
+    # ── DevisItems orphan ──
+    DI = d.get("DevisItems")
+    if DI is not None and not DI.empty and D is not None and not D.empty:
+        if "devis_id" in DI.columns and "id" in D.columns:
+            valid = set(D["id"].dropna().astype(int))
+            m = ~DI["devis_id"].dropna().astype(int).isin(valid)
+            if m.any():
+                ids = DI.loc[m[m].index, "id"].dropna().astype(int).astype(str).tolist()[:10]
+                add("DevisItems","Orphelin","High","Ligne liée à un devis inexistant",int(m.sum()),", ".join(ids))
+
+    if not rows:
+        rows.append(dict(Sheet="-", Type="Aucune anomalie", Severity="OK",
+                         Description="Toutes les données sont cohérentes", Count=0, Sample_IDs=""))
+
+    return pd.DataFrame(rows)
+
+def write_anomalies_sheet(df: pd.DataFrame) -> None:
+    """Write (overwrite) the Anomalies sheet in the Google Sheet."""
+    if df.empty or (len(df)==1 and df.iloc[0]["Type"]=="Aucune anomalie"):
+        df = df  # keep as-is (will write OK row)
+    client = _get_client()
+    sh = client.open_by_key(SHEET_ID)
+    try:
+        existing = sh.worksheet("Anomalies")
+        sh.del_worksheet(existing)
+    except:
+        pass
+    ws = sh.add_worksheet(title="Anomalies", rows=max(len(df)+1, 2), cols=len(df.columns))
+    header = df.columns.tolist()
+    vals = df.values.tolist()
+    ws.update([header] + vals)
+    ws.format("A1:F1", {"backgroundColor": {"red":0.12,"green":0.12,"blue":0.12},
+                        "textFormat": {"bold":True,"foregroundColor":{"red":1,"green":1,"blue":1}}})
+    # Auto-resize
+    try:
+        from gspread.utils import a1_to_rowcol
+        ws.columns_auto_resize(0, len(df.columns)-1)
+    except:
+        pass
+
 @st.cache_data(show_spinner="Chargement du Google Sheet…", ttl=600)
 def load_all_sheets() -> Dict[str, pd.DataFrame]:
     client = _get_client()
@@ -1263,6 +1641,7 @@ if st.sidebar.button("Rafraîchir", key="sidebar_refresh", use_container_width=T
     st.cache_data.clear()
     st.rerun()
 data = load_all_sheets()
+
 sales_full = build_sales_full(data)
 purchases_full = build_purchases_full(data)
 all_years = sorted(sales_full["sale_date"].dt.year.dropna().unique())
@@ -1474,13 +1853,14 @@ def _kpi_card(icon, title, value, delta_html=""):
     </div>
     """
 
-def _cli_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
+def _cli_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
+    h = height if height is not None else _CHART_H
     fig.update_layout(
-        height=height,
+        height=h,
         paper_bgcolor=CL_CARD,
         plot_bgcolor=CL_CARD,
-        font=dict(family="Inter, sans-serif", size=10, color=CL_INK),
-        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
+        font=dict(family="Inter, sans-serif", size=9, color=CL_INK),
+        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
                     font=dict(size=9, color=CL_MUTED),
@@ -1507,7 +1887,7 @@ def _cli_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> g
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=13, color=CL_INK, family="Inter, sans-serif"),
+        textfont=dict(size=10, color=CL_INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -1522,35 +1902,35 @@ def _cli_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> g
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=2, shape="spline", smoothing=0.6),
-        marker=dict(size=4, line=dict(width=1, color=CL_CARD)),
+        line=dict(width=1.5, shape="spline", smoothing=0.6),
+        marker=dict(size=3, line=dict(width=0.5, color=CL_CARD)),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=13, color=CL_INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color=CL_CARD, width=1.5)),
+        textfont=dict(size=10, color=CL_INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color=CL_CARD, width=1)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color=CL_CARD, width=1)),
-        textfont=dict(size=13, color=CL_INK),
+        marker=dict(line=dict(color=CL_CARD, width=0.5)),
+        textfont=dict(size=10, color=CL_INK),
     )
     return fig
 
 def _cli_icon(svg: str, color: str = CL_PRIMARY) -> str:
     r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
     return f"""
-    <div style="width:34px;height:34px;border-radius:50%;
+    <div style="width:24px;height:24px;border-radius:50%;
                 background:rgba({r},{g},{b},0.12);
                 display:flex;align-items:center;justify-content:center;
                 flex-shrink:0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="{color}" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
             {svg}
@@ -1560,14 +1940,14 @@ def _cli_icon(svg: str, color: str = CL_PRIMARY) -> str:
 def _kpi_card_clients(svg_path: str, title: str, value: str, delta_html: str = "") -> str:
     return f"""
     <div class='kpi-card cli-kpi'>
-        <div class='kpi-head' style='gap:8px'>
+        <div class='kpi-head' style='gap:4px'>
             {_cli_icon(svg_path)}
-            <span class='kpi-title' style='font-size:13px;font-weight:600;color:#CBD5E1;
+            <span class='kpi-title' style='font-size:10px;font-weight:600;color:#CBD5E1;
                    letter-spacing:0;text-transform:none;white-space:normal;'>{title}</span>
         </div>
-        <div class='kpi-value' style='font-size:28px;font-weight:700;color:#FFFFFF;
-               margin-top:2px;'>{value}</div>
-        <div class='kpi-sub' style='font-size:11px;color:#94A3B8;min-height:16px;
+        <div class='kpi-value' style='font-size:18px;font-weight:700;color:#FFFFFF;
+               margin-top:0;'>{value}</div>
+        <div class='kpi-sub' style='font-size:9px;color:#94A3B8;min-height:12px;
                margin-top:0;'>{delta_html}</div>
     </div>"""
 
@@ -1584,11 +1964,11 @@ def _cli_section_title(title: str, subtitle: str = ""):
 def _tr_icon(svg: str, color: str = TR_PRIMARY) -> str:
     r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
     return f"""
-    <div style="width:34px;height:34px;border-radius:50%;
+    <div style="width:24px;height:24px;border-radius:50%;
                 background:rgba({r},{g},{b},0.12);
                 display:flex;align-items:center;justify-content:center;
                 flex-shrink:0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="{color}" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
             {svg}
@@ -1598,14 +1978,14 @@ def _tr_icon(svg: str, color: str = TR_PRIMARY) -> str:
 def _kpi_card_tr(svg_path: str, title: str, value: str, delta_html: str = "") -> str:
     return f"""
     <div class='kpi-card tr-kpi'>
-        <div class='kpi-head' style='gap:8px'>
+        <div class='kpi-head' style='gap:4px'>
             {_tr_icon(svg_path)}
-            <span class='kpi-title' style='font-size:13px;font-weight:600;color:#CBD5E1;
+            <span class='kpi-title' style='font-size:10px;font-weight:600;color:#CBD5E1;
                    letter-spacing:0;text-transform:none;white-space:normal;'>{title}</span>
         </div>
-        <div class='kpi-value' style='font-size:28px;font-weight:700;color:#FFFFFF;
-               margin-top:2px;'>{value}</div>
-        <div class='kpi-sub' style='font-size:11px;color:#94A3B8;min-height:16px;
+        <div class='kpi-value' style='font-size:18px;font-weight:700;color:#FFFFFF;
+               margin-top:0;'>{value}</div>
+        <div class='kpi-sub' style='font-size:9px;color:#94A3B8;min-height:12px;
                margin-top:0;'>{delta_html}</div>
     </div>"""
 
@@ -1617,13 +1997,14 @@ def _tr_section_title(title: str, subtitle: str = ""):
         unsafe_allow_html=True,
     )
 
-def _tr_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
+def _tr_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
+    h = height if height is not None else _CHART_H
     fig.update_layout(
-        height=height,
+        height=h,
         paper_bgcolor=TR_CARD,
         plot_bgcolor=TR_CARD,
-        font=dict(family="Inter, sans-serif", size=10, color=TR_INK),
-        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
+        font=dict(family="Inter, sans-serif", size=9, color=TR_INK),
+        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
                     font=dict(size=9, color=TR_MUTED),
@@ -1650,7 +2031,7 @@ def _tr_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=13, color=TR_INK, family="Inter, sans-serif"),
+        textfont=dict(size=10, color=TR_INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -1665,24 +2046,24 @@ def _tr_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=2, shape="spline", smoothing=0.6),
-        marker=dict(size=4, line=dict(width=1, color=TR_CARD)),
+        line=dict(width=1.5, shape="spline", smoothing=0.6),
+        marker=dict(size=3, line=dict(width=0.5, color=TR_CARD)),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=13, color=TR_INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color=TR_CARD, width=1.5)),
+        textfont=dict(size=10, color=TR_INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color=TR_CARD, width=1)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color=TR_CARD, width=1)),
-        textfont=dict(size=13, color=TR_INK),
+        marker=dict(line=dict(color=TR_CARD, width=0.5)),
+        textfont=dict(size=10, color=TR_INK),
     )
     return fig
 
@@ -1691,11 +2072,11 @@ def _tr_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go
 def _st_icon(svg: str, color: str = ST_PRIMARY) -> str:
     r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
     return f"""
-    <div style="width:34px;height:34px;border-radius:50%;
+    <div style="width:24px;height:24px;border-radius:50%;
                 background:rgba({r},{g},{b},0.12);
                 display:flex;align-items:center;justify-content:center;
                 flex-shrink:0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="{color}" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
             {svg}
@@ -1705,14 +2086,14 @@ def _st_icon(svg: str, color: str = ST_PRIMARY) -> str:
 def _kpi_card_st(svg_path: str, title: str, value: str, delta_html: str = "") -> str:
     return f"""
     <div class='kpi-card st-kpi'>
-        <div class='kpi-head' style='gap:8px'>
+        <div class='kpi-head' style='gap:4px'>
             {_st_icon(svg_path)}
-            <span class='kpi-title' style='font-size:13px;font-weight:600;color:#CBD5E1;
+            <span class='kpi-title' style='font-size:10px;font-weight:600;color:#CBD5E1;
                    letter-spacing:0;text-transform:none;white-space:normal;'>{title}</span>
         </div>
-        <div class='kpi-value' style='font-size:28px;font-weight:700;color:#FFFFFF;
-               margin-top:2px;'>{value}</div>
-        <div class='kpi-sub' style='font-size:11px;color:#94A3B8;min-height:16px;
+        <div class='kpi-value' style='font-size:18px;font-weight:700;color:#FFFFFF;
+               margin-top:0;'>{value}</div>
+        <div class='kpi-sub' style='font-size:9px;color:#94A3B8;min-height:12px;
                margin-top:0;'>{delta_html}</div>
     </div>"""
 
@@ -1724,13 +2105,14 @@ def _st_section_title(title: str, subtitle: str = ""):
         unsafe_allow_html=True,
     )
 
-def _st_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
+def _st_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
+    h = height if height is not None else _CHART_H
     fig.update_layout(
-        height=height,
+        height=h,
         paper_bgcolor=ST_CARD,
         plot_bgcolor=ST_CARD,
-        font=dict(family="Inter, sans-serif", size=10, color=ST_INK),
-        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
+        font=dict(family="Inter, sans-serif", size=9, color=ST_INK),
+        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
                     font=dict(size=9, color=ST_MUTED),
@@ -1757,7 +2139,7 @@ def _st_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=13, color=ST_INK, family="Inter, sans-serif"),
+        textfont=dict(size=10, color=ST_INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -1772,24 +2154,24 @@ def _st_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=2, shape="spline", smoothing=0.6),
-        marker=dict(size=4, line=dict(width=1, color=ST_CARD)),
+        line=dict(width=1.5, shape="spline", smoothing=0.6),
+        marker=dict(size=3, line=dict(width=0.5, color=ST_CARD)),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=13, color=ST_INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color=ST_CARD, width=1.5)),
+        textfont=dict(size=10, color=ST_INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color=ST_CARD, width=1)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color=ST_CARD, width=1)),
-        textfont=dict(size=13, color=ST_INK),
+        marker=dict(line=dict(color=ST_CARD, width=0.5)),
+        textfont=dict(size=10, color=ST_INK),
     )
     return fig
 
@@ -1805,9 +2187,10 @@ if section == "Ventes":
         pu_status = data["Purchases"]["status"].fillna("").str.lower()
         pu_ok_ids = set(data["Purchases"].loc[pu_status.isin(["confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
         pi_all = pi_all[pi_all["purchase_id"].isin(pu_ok_ids)]
-        _g = pi_all.groupby("product_id").apply(
-            lambda g: (g["cost_total"].sum() / g["q"].sum()) if g["q"].sum() > 0 else np.nan
-        ).reset_index(name="unit_cost")
+        _g = pi_all.groupby("product_id").agg(
+            cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
+        ).reset_index()
+        _g["unit_cost"] = np.where(_g["q_sum"] > 0, _g["cost_sum"] / _g["q_sum"], np.nan)
         cost_map = dict(zip(_g["product_id"], _g["unit_cost"]))
     else:
         cost_map = {}
@@ -2074,10 +2457,12 @@ if section == "Ventes":
                     hovertemplate: '%{x|%d %b %Y}<br>%{y:,.0f}k<extra></extra>',
                 });
             }
+            var h = document.documentElement.style.getPropertyValue('--chart-h');
+            h = h ? parseInt(h) : 155;
             Plotly.react(g1El, g1Data, {
-                height: 240, margin: {l:6, r:6, t:28, b:14},
+                height: h, margin: {l:4, r:4, t:20, b:10},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-                font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
+                font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
                 hovermode: 'x unified',
                 showlegend: dim || val ? true : false,
                 legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
@@ -2102,12 +2487,12 @@ if section == "Ventes":
                 pull: pulls, hole: 0.0,
                 textposition: 'inside', texttemplate: '%{percent:.1%}',
                 marker: {colors: pieColors, line: {color: '#292524', width: 2}},
-                textfont: {color: pieColors.map(c => c === '#D0D0D0' ? '#999' : '#FFF'), size: 10},
-                domain: {x: [0.05, 0.95], y: [0.20, 0.98]},
+                textfont: {color: pieColors.map(c => c === '#D0D0D0' ? '#999' : '#FFF'), size: 9},
+                domain: {x: [0.05, 0.95], y: [0.25, 0.98]},
             }], {
-                height: 240, margin: {l:6, r:6, t:6, b:6},
+                height: h, margin: {l:4, r:4, t:4, b:4},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-                font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
+                font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
                 showlegend: true, legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
             }, {transition: {duration: 500}});
         }
@@ -2131,12 +2516,12 @@ if section == "Ventes":
                 hole: 0.5, textinfo: 'label+percent',
                 texttemplate: '%{label}<br>%{percent}',
                 marker: {colors: pFinalColors, line: {color: '#292524', width: 2}},
-                textfont: {size: 10, color: pFinalColors.map(c => c === '#D0D0D0' ? '#999' : '#FAFAF9')},
+                textfont: {size: 9, color: pFinalColors.map(c => c === '#D0D0D0' ? '#999' : '#FAFAF9')},
             }], {
-                height: 240, margin: {l:6, r:6, t:32, b:36},
+                height: h, margin: {l:4, r:4, t:24, b:28},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-                font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
-                annotations: [{text: '<b>Total</b><br>'+totalK.toFixed(0)+'k', x:0.5, y:0.5, showarrow:false, font:{size:11,color:'#FAFAF9'}}],
+                font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
+                annotations: [{text: '<b>Total</b><br>'+totalK.toFixed(0)+'k', x:0.5, y:0.5, showarrow:false, font:{size:10,color:'#FAFAF9'}}],
                 showlegend: true, legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
             }, {transition: {duration: 500}});
         }
@@ -2157,16 +2542,16 @@ if section == "Ventes":
                 marker: {color: pColorsB, opacity: pOpac},
                 text: pValsK.map(v => v.toFixed(0)+'k'),
                 textposition: 'inside', insidetextanchor: 'middle',
-                textfont: {size: 9, color: pOpac.map(o => o < 0.5 ? '#999' : 'white')},
+                textfont: {size: 8, color: pOpac.map(o => o < 0.5 ? '#999' : 'white')},
                 width: 0.85,
                 hovertemplate: '%{y}<br>%{x:,.0f}k<extra></extra>',
             }], {
-                height: 240, margin: {l:4, r:4, t:32, b:24},
+                height: h, margin: {l:2, r:2, t:24, b:18},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-                font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
+                font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
                 hovermode: 'y unified',
                 xaxis: {title: null, tickformat: ',.0f', showgrid: true, gridcolor: '#3C3528', zeroline: false},
-                yaxis: {title: null, autorange: 'reversed', tickfont: {size: 9}, showgrid: false},
+                yaxis: {title: null, autorange: 'reversed', tickfont: {size: 8}, showgrid: false},
                 bargap: 0.05,
             }, {transition: {duration: 500}});
         }
@@ -2200,11 +2585,11 @@ if section == "Ventes":
                 width: 0.3,
                 hovertemplate: '%{y}: %{x:,.0f}k<extra></extra>'});
             Plotly.react(g6El, traces, {
-                height: 240, margin: {l:6, r:6, t:28, b:10},
+                height: h, margin: {l:4, r:4, t:20, b:8},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-                font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
+                font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
                 xaxis: {title: null, tickformat: ',.0f', showgrid: true, gridcolor: '#3C3528'},
-                yaxis: {title: null, autorange: 'reversed', tickfont: {size: 10}, showgrid: false},
+                yaxis: {title: null, autorange: 'reversed', tickfont: {size: 9}, showgrid: false},
                 bargap: 0.02,
             }, {transition: {duration: 500}});
         }
@@ -2253,9 +2638,9 @@ if section == "Ventes":
                 marker: {symbol: 'circle', size: 6},
                 hovertemplate: '%{x|%d %b %Y}<br>%{y:,.0f}k<extra></extra>'});
             Plotly.react(g2El, traces, {
-                height: 240, margin: {l:4, r:4, t:36, b:16},
+                height: h, margin: {l:2, r:2, t:26, b:12},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-                font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
+                font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
                 hovermode: 'x unified',
                 barmode: 'group', bargap: 0.05, bargroupgap: 0.02,
                 showlegend: true, legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
@@ -2291,7 +2676,7 @@ if section == "Ventes":
                 colorbar: {title: 'CA', thickness: 12, len: 0.6, x: 0.92, y: 0.5},
                 marker: {line: {color: '#292524', width: 1}},
             }], {
-                height: 240, margin: {l:0, r:0, t:0, b:0},
+                height: h, margin: {l:0, r:0, t:0, b:0},
                 geo: {bgcolor: 'rgba(0,0,0,0)', fitbounds: 'locations', visible: false,
                       projection: {type: 'mercator'}, lonaxis: {range: [-13,-2]}, lataxis: {range: [27,36]}, resolution: 50},
             }, {transition: {duration: 500}});
@@ -2519,12 +2904,12 @@ if section == "Clients":
         _delai_moyen = 0
     cli_values = [f"{total_clients:,}", f"{new_clients:,}", f"{active:,}", f"{_delai_moyen:.0f}J", _fmt(panier)]
 
-    spacer(14)
+    spacer(8)
     kc = st.columns(5)
     for col, (svg_path, title), val in zip(kc, cli_icons, cli_values):
         col.markdown(_kpi_card_clients(svg_path, title, val), unsafe_allow_html=True)
 
-    spacer(10)
+    spacer(6)
 
     # ── Global client filter ──
     cli_map = dict(zip(cli["name"], cli["id"]))
@@ -2532,7 +2917,7 @@ if section == "Clients":
     sel_cli = st.selectbox("Client", cli_opts, key="cli_global_filter")
     cli_fid = None if sel_cli == "Tous" else cli_map[sel_cli]
 
-    spacer(10)
+    spacer(6)
 
     _cli_grid = f"rgba(148,163,184,{0.10})"
 
@@ -2637,7 +3022,7 @@ if section == "Clients":
                 cli_name_row = agg.loc[agg["client_id"] == cli_fid, "client_name"]
                 if not cli_name_row.empty:
                     fig.update_layout(title=dict(text=f"Top 10 CA — {cli_name_row.iloc[0]}"))
-            fig.update_layout(height=185, margin=dict(l=10, r=30, t=30, b=6),
+            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=20, b=4),
                 xaxis=dict(ticksuffix="K", showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), range=[0, max_k * 1.25]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
@@ -2645,7 +3030,7 @@ if section == "Clients":
             fig.update_traces(cliponaxis=False)
             st.plotly_chart(fig, key="cli_chart_3", use_container_width=True)
 
-        spacer(15)
+        spacer(8)
 
         # Row 2 ─ Répartition géographique | Encaissé vs Impayé | Retours par client
         r2c1, r2c2, r2c3 = st.columns([1.0, 0.8, 0.7])
@@ -2679,8 +3064,7 @@ if section == "Clients":
                     _mrg = _ct.merge(_vdf[["ville_norm", "region_nom"]],
                                      left_on="city_norm", right_on="ville_norm",
                                      how="left")
-                    _rc = _mrg["region_nom"].fillna("Autre").value_counts().head(10)
-                    _rc = _rc.reset_index(name="clients")
+                    _rc = _mrg["region_nom"].fillna("Autre").value_counts().head(10).to_frame("clients").reset_index()
                     _rc.columns = ["region", "clients"]
                     if cli_fid:
                         _m = _mrg[_mrg["id"] == cli_fid]
@@ -2691,7 +3075,7 @@ if section == "Clients":
                     _ct = cli[["id", "address"]].copy()
                     _ct["city"] = (_ct["address"].fillna("").astype(str)
                                    .str.split(",").str[-1].str.strip())
-                    _rc = _ct["city"].value_counts().head(10).reset_index(name="clients")
+                    _rc = _ct["city"].value_counts().head(10).to_frame("clients").reset_index()
                     _rc.columns = ["region", "clients"]
                     _cli_region = ""
                     if cli_fid:
@@ -2766,7 +3150,7 @@ if section == "Clients":
                     if cli_fid:
                         rr = rr[rr["client_id"] == cli_fid]
                     if not rr.empty:
-                        rr_agg = rr.groupby(["name", "client_id"]).size().reset_index(name="retours")
+                        rr_agg = rr.groupby(["name", "client_id"]).size().to_frame("retours").reset_index()
                         rr_agg = rr_agg.sort_values("retours", ascending=False).head(30)
                         if not rr_agg.empty:
                             fig = px.treemap(rr_agg, path=["name"], values="retours",
@@ -2781,7 +3165,7 @@ if section == "Clients":
                 except Exception as e:
                     st.info(f"Retours non disponibles: {e}")
 
-        spacer(15)
+        spacer(8)
 
         # Row 3 ─ Délai moyen paiement | Fréquence d'achat
         r3c1, r3c2 = st.columns([1.0, 0.8])
@@ -2795,7 +3179,7 @@ if section == "Clients":
                 mrg["délai"] = (pd.to_datetime(mrg["pay_date"]) -
                                 pd.to_datetime(mrg["sale_date"])).dt.days
                 dd = (mrg.groupby("client_id")["délai"].mean()
-                      .reset_index(name="délai_moyen").sort_values("délai_moyen", ascending=False))
+                      .to_frame("délai_moyen").reset_index().sort_values("délai_moyen", ascending=False))
                 ci = data["Clients"][["id", "name"]].rename(
                     columns={"id": "client_id", "name": "client_name"})
                 dd = dd.merge(ci, on="client_id", how="left")
@@ -2822,7 +3206,7 @@ if section == "Clients":
         with r3c2:
             _cli_section_title("Fréquence d'achat")
             freq = (su.groupby("client_id")["sale_id"].nunique()
-                    .reset_index(name="achats"))
+                    .to_frame("achats").reset_index())
             freq = freq.merge(data["Clients"][["id", "name"]].rename(
                 columns={"id": "client_id"}), on="client_id", how="left")
             freq["name"] = freq["name"].fillna("Client #" + freq["client_id"].astype(str))
@@ -2839,7 +3223,7 @@ if section == "Clients":
             if cli_fid:
                 _mask = list(freq["client_id"] == cli_fid)
                 fig.update_traces(marker=dict(opacity=[1.0 if m else 0.15 for m in _mask]))
-            fig.update_layout(height=185, margin=dict(l=10, r=10, t=30, b=6),
+            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=6, t=20, b=4),
                 xaxis=dict(showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), rangemode="tozero"),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
@@ -2883,7 +3267,7 @@ if section == "Stock & Achats":
         st.session_state.stock_cross_filter = None
 
     # KPI
-    spacer(14)
+    spacer(8)
     kpi_container = st.empty()
 
     # Coût unitaire par produit
@@ -2896,9 +3280,10 @@ if section == "Stock & Achats":
         pu_ok_ids_stock = set(data["Purchases"].loc[pu_status_stock.isin(
             ["confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
         pi_all_stock = pi_all_stock[pi_all_stock["purchase_id"].isin(pu_ok_ids_stock)]
-        _g_stock = pi_all_stock.groupby("product_id").apply(
-            lambda g: (g["cost_total"].sum() / g["q"].sum()) if g["q"].sum() > 0 else 0
-        ).reset_index(name="unit_cost")
+        _g_stock = pi_all_stock.groupby("product_id").agg(
+            cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
+        ).reset_index()
+        _g_stock["unit_cost"] = np.where(_g_stock["q_sum"] > 0, _g_stock["cost_sum"] / _g_stock["q_sum"], 0)
         cost_map_stock = dict(zip(_g_stock["product_id"], _g_stock["unit_cost"]))
     else:
         cost_map_stock = {}
@@ -2939,7 +3324,7 @@ if section == "Stock & Achats":
                 col.markdown(_kpi_card_st(kpi["svg"], kpi["title"], kpi["value"]), unsafe_allow_html=True)
 
     display_kpis()
-    spacer(10)
+    spacer(6)
 
     # Filtre produit
     product_names = ["Tous"] + sorted(products["name"].dropna().unique())
@@ -2956,7 +3341,7 @@ if section == "Stock & Achats":
         pu_cur = pu_full.copy()
 
     display_kpis()
-    spacer(10)
+    spacer(6)
 
     # LIGNE 1 : Mouvements du stock | Entrées / sorties par catégorie
     nb_jours = (end_dt - start_dt).days
@@ -3005,7 +3390,7 @@ if section == "Stock & Achats":
             ))
             fig_evo.update_layout(
                 barmode="stack", bargap=0.2,
-                height=210, margin=dict(l=10, r=10, t=10, b=36),
+                height=_CHART_H, margin=dict(l=4, r=4, t=6, b=18),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=ST_INK),
                 legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center", font=dict(size=10, color=ST_MUTED), bgcolor="rgba(0,0,0,0)"),
@@ -3082,7 +3467,7 @@ if section == "Stock & Achats":
         ))
         fig_io.update_layout(
             barmode="group", bargap=0.3, bargroupgap=0.15,
-            height=210, margin=dict(l=10, r=10, t=10, b=36),
+            height=_CHART_H, margin=dict(l=4, r=4, t=6, b=18),
             plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD,
             font=dict(family="Inter, sans-serif", size=11, color=ST_INK),
             legend=dict(orientation="h", yanchor="bottom", y=1.15,
@@ -3098,7 +3483,7 @@ if section == "Stock & Achats":
         )
         st.plotly_chart(fig_io, key="ch_fig_11", use_container_width=True)
 
-    spacer(15)
+    spacer(8)
 
     # LIGNE 2 : Top 10 produits par valeur | Donut | Rotation
     r2 = st.columns([1.0, 0.8, 0.8])
@@ -3155,8 +3540,8 @@ if section == "Stock & Achats":
                 hovertemplate="<b>%{label}</b><br>%{customdata} — %{percent}<extra></extra>",
             ))
             fig_donut.update_layout(
-                margin=dict(l=6, r=6, t=6, b=6),
-                height=185,
+                margin=dict(l=2, r=2, t=2, b=2),
+                height=_CHART_H,
                 paper_bgcolor=ST_CARD,
                 plot_bgcolor=ST_CARD,
             )
@@ -3230,12 +3615,12 @@ if section == "Stock & Achats":
             ))
             fig_tm.update_layout(
                 margin=dict(l=0, r=0, t=0, b=0),
-                height=175,
-                font=dict(family="Inter, sans-serif", size=10),
+                height=_CHART_H,
+                font=dict(family="Inter, sans-serif", size=9),
             )
-            st.plotly_chart(_st_style_fig(fig_tm, 175), key="ch_fig_12", use_container_width=True)
+            st.plotly_chart(_st_style_fig(fig_tm, _CHART_H), key="ch_fig_12", use_container_width=True)
 
-    spacer(15)
+    spacer(8)
 
     # LIGNE 3 : Retours | Produits sous seuil | Alertes
     r3 = st.columns([1.0, 0.8, 0.8])
@@ -3324,7 +3709,7 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: %{text}<extra></extra>"
             ))
-            fig.update_layout(height=185, margin=dict(l=10, r=30, t=8, b=6),
+            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=6, b=4),
                 xaxis=dict(showgrid=True, gridcolor=ST_GRID, tickfont=dict(color=ST_MUTED), range=[0, max_s * 1.3]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=ST_MUTED), showgrid=False),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD, bargap=0.4,
@@ -3356,7 +3741,7 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: %{text}<extra></extra>"
             ))
-            fig.update_layout(height=185, margin=dict(l=10, r=30, t=8, b=6),
+            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=6, b=4),
                 xaxis=dict(showgrid=True, gridcolor=ST_GRID, tickfont=dict(color=ST_MUTED), range=[0, max_s * 1.3]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=ST_MUTED), showgrid=False),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD, bargap=0.4,
@@ -3576,7 +3961,7 @@ if section == "Trésorerie":
         dpo_m = pd.Series(dtype=float)
 
     # LIGNE 1 : KPIs Trésorerie (5 cartes)
-    spacer(14)
+    spacer(8)
     c1, c2, c3, c4, c5 = st.columns(5)
     tr_svg_solde = '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>'
     c1.markdown(_kpi_card_tr(tr_svg_solde, "Solde de trésorerie", _fmt(solde)), unsafe_allow_html=True)
@@ -3603,7 +3988,7 @@ if section == "Trésorerie":
     var_txt = f"{var_sign}{variation_pct:.1f}%"
     c5.markdown(_kpi_card_tr(tr_var_svg, "Variation trésorerie", var_txt), unsafe_allow_html=True)
 
-    spacer(10)
+    spacer(6)
 
     bfr_mois_abrev = {
         1: "Jan", 2: "Fév", 3: "Mar", 4: "Avr",
@@ -3679,7 +4064,7 @@ if section == "Trésorerie":
             ))
             fig.update_layout(
                 barmode="group", bargap=0.3, bargroupgap=0.15,
-                height=210, margin=dict(l=10, r=10, t=40, b=36),
+                height=_CHART_H, margin=dict(l=4, r=4, t=22, b=18),
                 plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
                 legend=dict(orientation="h", yanchor="bottom", y=1.04,
@@ -3698,7 +4083,7 @@ if section == "Trésorerie":
         else:
             st.info("Aucune donnée.")
 
-    spacer(15)
+    spacer(8)
 
     # ROW 2 : Analyse des flux
     r3c1, r3c2, r3c3 = st.columns([1.0, 0.8, 0.8])
@@ -3739,8 +4124,8 @@ if section == "Trésorerie":
                 cliponaxis=False,
             ))
             fig_spend.update_layout(
-                height=185,
-                margin=dict(l=8, r=80, t=8, b=6),
+                height=_CHART_H,
+                margin=dict(l=4, r=60, t=4, b=4),
                 paper_bgcolor=TR_CARD,
                 plot_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
@@ -3793,7 +4178,7 @@ if section == "Trésorerie":
             ))
             fig6.update_layout(margin=dict(l=5, r=5, t=5, b=5))
             st.markdown('<div id="chart-tr6">', unsafe_allow_html=True)
-            st.plotly_chart(_tr_style_fig(fig6, height=185, pie=True), key="tr_chart_6", on_select="ignore", use_container_width=True)
+            st.plotly_chart(_tr_style_fig(fig6, height=_CHART_H, pie=True), key="tr_chart_6", on_select="ignore", use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Pas assez de données.")
@@ -3832,7 +4217,7 @@ if section == "Trésorerie":
             ))
             fig.add_hline(y=0, line_dash="dot", line_color=TR_MUTED, opacity=0.4)
             fig.update_layout(
-                height=185, margin=dict(l=10, r=10, t=8, b=6),
+                height=_CHART_H, margin=dict(l=6, r=6, t=6, b=4),
                 plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
                 legend=dict(orientation="h", yanchor="bottom", y=1.04,
@@ -3850,7 +4235,7 @@ if section == "Trésorerie":
         else:
             st.info("Pas assez de données pour le BFR.")
 
-    spacer(15)
+    spacer(8)
 
     # ROW 4 : Prévision
     r4c1, r4c2, r4c3 = st.columns([1.0, 0.8, 0.8])
@@ -3954,14 +4339,14 @@ if section == "Trésorerie":
                     hovertemplate="%{x}<br>Prévision : <b>%{customdata}</b><extra></extra>"))
                 fig.add_hline(y=0, line_dash="dot", line_color=TR_NEGATIVE, opacity=0.4)
                 fig.update_layout(
-                    height=185,
+                    height=_CHART_H,
                     xaxis=dict(type="category", categoryorder="array",
                                categoryarray=hist_dates + fore_labels,
                                tickangle=-30, tickfont=dict(size=8)),
                     yaxis=dict(rangemode="tozero",
                                zeroline=True, zerolinecolor=TR_GRID),
                 )
-                fig_custom = _tr_style_fig(fig, 185)
+                fig_custom = _tr_style_fig(fig, _CHART_H)
                 _fmt_ticks(fig_custom, "y")
                 fig_custom.update_layout(
                     margin=dict(t=70),
@@ -4021,7 +4406,7 @@ if section == "Trésorerie":
             }
         ))
         fig.update_layout(
-            height=185, margin=dict(l=10, r=10, t=6, b=6),
+            height=_CHART_H, margin=dict(l=6, r=6, t=4, b=4),
             paper_bgcolor=TR_CARD,
             font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
         )
