@@ -1021,7 +1021,7 @@ def spacer(height: int = 15):
     st.markdown(f"<div style='height:{height}px'></div>", unsafe_allow_html=True)
 
 # Style des graphiques
-def style_fig(fig: go.Figure, height: int = 220, *, pie: bool = False) -> go.Figure:
+def style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
         height=height,
         paper_bgcolor=CARD,
@@ -1474,7 +1474,7 @@ def _kpi_card(icon, title, value, delta_html=""):
     </div>
     """
 
-def _cli_style_fig(fig: go.Figure, height: int = 220, *, pie: bool = False) -> go.Figure:
+def _cli_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
         height=height,
         paper_bgcolor=CL_CARD,
@@ -1617,7 +1617,7 @@ def _tr_section_title(title: str, subtitle: str = ""):
         unsafe_allow_html=True,
     )
 
-def _tr_style_fig(fig: go.Figure, height: int = 220, *, pie: bool = False) -> go.Figure:
+def _tr_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
         height=height,
         paper_bgcolor=TR_CARD,
@@ -1724,7 +1724,7 @@ def _st_section_title(title: str, subtitle: str = ""):
         unsafe_allow_html=True,
     )
 
-def _st_style_fig(fig: go.Figure, height: int = 220, *, pie: bool = False) -> go.Figure:
+def _st_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
         height=height,
         paper_bgcolor=ST_CARD,
@@ -2075,7 +2075,7 @@ if section == "Ventes":
                 });
             }
             Plotly.react(g1El, g1Data, {
-                height: 320, margin: {l:10, r:10, t:40, b:30},
+                height: 240, margin: {l:6, r:6, t:28, b:14},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
                 hovermode: 'x unified',
@@ -2105,7 +2105,7 @@ if section == "Ventes":
                 textfont: {color: pieColors.map(c => c === '#D0D0D0' ? '#999' : '#FFF'), size: 10},
                 domain: {x: [0.05, 0.95], y: [0.20, 0.98]},
             }], {
-                height: 320, margin: {l:10, r:10, t:10, b:10},
+                height: 240, margin: {l:6, r:6, t:6, b:6},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
                 showlegend: true, legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
@@ -2133,7 +2133,7 @@ if section == "Ventes":
                 marker: {colors: pFinalColors, line: {color: '#292524', width: 2}},
                 textfont: {size: 10, color: pFinalColors.map(c => c === '#D0D0D0' ? '#999' : '#FAFAF9')},
             }], {
-                height: 320, margin: {l:10, r:10, t:50, b:60},
+                height: 240, margin: {l:6, r:6, t:32, b:36},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
                 annotations: [{text: '<b>Total</b><br>'+totalK.toFixed(0)+'k', x:0.5, y:0.5, showarrow:false, font:{size:11,color:'#FAFAF9'}}],
@@ -2161,7 +2161,7 @@ if section == "Ventes":
                 width: 0.85,
                 hovertemplate: '%{y}<br>%{x:,.0f}k<extra></extra>',
             }], {
-                height: 320, margin: {l:5, r:5, t:50, b:40},
+                height: 240, margin: {l:4, r:4, t:32, b:24},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
                 hovermode: 'y unified',
@@ -2200,7 +2200,7 @@ if section == "Ventes":
                 width: 0.3,
                 hovertemplate: '%{y}: %{x:,.0f}k<extra></extra>'});
             Plotly.react(g6El, traces, {
-                height: 320, margin: {l:10, r:10, t:40, b:20},
+                height: 240, margin: {l:6, r:6, t:28, b:10},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
                 xaxis: {title: null, tickformat: ',.0f', showgrid: true, gridcolor: '#3C3528'},
@@ -2253,7 +2253,7 @@ if section == "Ventes":
                 marker: {symbol: 'circle', size: 6},
                 hovertemplate: '%{x|%d %b %Y}<br>%{y:,.0f}k<extra></extra>'});
             Plotly.react(g2El, traces, {
-                height: 320, margin: {l:5, r:5, t:60, b:30},
+                height: 240, margin: {l:4, r:4, t:36, b:16},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 11, color: '#FAFAF9'},
                 hovermode: 'x unified',
@@ -2291,7 +2291,7 @@ if section == "Ventes":
                 colorbar: {title: 'CA', thickness: 12, len: 0.6, x: 0.92, y: 0.5},
                 marker: {line: {color: '#292524', width: 1}},
             }], {
-                height: 320, margin: {l:0, r:0, t:0, b:0},
+                height: 240, margin: {l:0, r:0, t:0, b:0},
                 geo: {bgcolor: 'rgba(0,0,0,0)', fitbounds: 'locations', visible: false,
                       projection: {type: 'mercator'}, lonaxis: {range: [-13,-2]}, lataxis: {range: [27,36]}, resolution: 50},
             }, {transition: {duration: 500}});
@@ -2483,7 +2483,7 @@ if section == "Ventes":
 
     if _react_html:
         try:
-            st.components.v1.html(_react_html, height=1200, scrolling=True)
+            st.components.v1.html(_react_html, height=1000, scrolling=True)
         except Exception as _e:
             st.error(f"Erreur lors du rendu React : {_e}")
     else:
@@ -2577,7 +2577,7 @@ if section == "Clients":
                                      customdata=[_fmt(v) for v in agg["cumul"]],
                                      hovertemplate="%{x}<br>Cumul : <b>%{customdata}</b><extra></extra>"))
             fig.update_layout(barmode="stack", bargap=0.2)
-            fig = _cli_style_fig(fig, 220)
+            fig = _cli_style_fig(fig)
             fig.update_traces(selector=dict(type="bar"), textposition="inside")
             st.plotly_chart(fig, key="cli_chart_1",
                             use_container_width=True)
@@ -2609,7 +2609,7 @@ if section == "Clients":
             fig = go.Figure(data=[go.Pie(
                 labels=lbls, values=vals, hole=0,
                 marker_colors=colors, textinfo="value+percent")])
-            fig = _cli_style_fig(fig, 220, pie=True)
+            fig = _cli_style_fig(fig, pie=True)
             fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5))
             st.plotly_chart(fig, key="cli_chart_2",
                             use_container_width=True)
@@ -2637,7 +2637,7 @@ if section == "Clients":
                 cli_name_row = agg.loc[agg["client_id"] == cli_fid, "client_name"]
                 if not cli_name_row.empty:
                     fig.update_layout(title=dict(text=f"Top 10 CA — {cli_name_row.iloc[0]}"))
-            fig.update_layout(height=220, margin=dict(l=10, r=30, t=35, b=10),
+            fig.update_layout(height=185, margin=dict(l=10, r=30, t=30, b=6),
                 xaxis=dict(ticksuffix="K", showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), range=[0, max_k * 1.25]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
@@ -2708,7 +2708,7 @@ if section == "Clients":
                     if any(_mask):
                         fig.update_traces(marker=dict(opacity=[1.0 if m else 0.15 for m in _mask]),
                                           selector=dict(type="bar"))
-                fig = _cli_style_fig(fig, 220)
+                fig = _cli_style_fig(fig)
                 fig.update_traces(selector=dict(type="bar"), textposition="inside")
                 st.plotly_chart(fig, key="cli_chart_4",
                                 use_container_width=True)
@@ -2741,7 +2741,7 @@ if section == "Clients":
                     fig.add_annotation(text=f"<b>Total</b><br>{_fmt(total_sales)}", showarrow=False,
                                        font=dict(size=11, color=CL_INK, family="Inter, sans-serif"),
                                        x=0.5, y=0.5)
-                    fig = _cli_style_fig(fig, 220, pie=True)
+                    fig = _cli_style_fig(fig, pie=True)
                     fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5))
                     st.plotly_chart(fig, key="cli_chart_8",
                                     use_container_width=True)
@@ -2772,7 +2772,7 @@ if section == "Clients":
                             fig = px.treemap(rr_agg, path=["name"], values="retours",
                                              color_discrete_sequence=CL_BI)
                             fig.update_traces(textinfo="label+value", textfont=dict(size=13, color=CL_INK))
-                            st.plotly_chart(_cli_style_fig(fig, 220), key="cli_chart_5",
+                            st.plotly_chart(_cli_style_fig(fig), key="cli_chart_5",
                                             use_container_width=True)
                         else:
                             st.info("Aucun retour.")
@@ -2812,7 +2812,7 @@ if section == "Clients":
                                       textfont=dict(size=13))
                     fig.update_layout(xaxis=dict(tickangle=45), coloraxis_showscale=False)
                     fig.update_yaxes(ticksuffix=" j")
-                    st.plotly_chart(_cli_style_fig(fig, 220), key="cli_chart_7",
+                    st.plotly_chart(_cli_style_fig(fig), key="cli_chart_7",
                                     use_container_width=True)
                 else:
                     st.info("Aucune donnée de paiement.")
@@ -2839,7 +2839,7 @@ if section == "Clients":
             if cli_fid:
                 _mask = list(freq["client_id"] == cli_fid)
                 fig.update_traces(marker=dict(opacity=[1.0 if m else 0.15 for m in _mask]))
-            fig.update_layout(height=220, margin=dict(l=10, r=10, t=35, b=10),
+            fig.update_layout(height=185, margin=dict(l=10, r=10, t=30, b=6),
                 xaxis=dict(showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), rangemode="tozero"),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
@@ -3005,7 +3005,7 @@ if section == "Stock & Achats":
             ))
             fig_evo.update_layout(
                 barmode="stack", bargap=0.2,
-                height=260, margin=dict(l=10, r=10, t=10, b=36),
+                height=210, margin=dict(l=10, r=10, t=10, b=36),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=ST_INK),
                 legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center", font=dict(size=10, color=ST_MUTED), bgcolor="rgba(0,0,0,0)"),
@@ -3082,7 +3082,7 @@ if section == "Stock & Achats":
         ))
         fig_io.update_layout(
             barmode="group", bargap=0.3, bargroupgap=0.15,
-            height=260, margin=dict(l=10, r=10, t=10, b=36),
+            height=210, margin=dict(l=10, r=10, t=10, b=36),
             plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD,
             font=dict(family="Inter, sans-serif", size=11, color=ST_INK),
             legend=dict(orientation="h", yanchor="bottom", y=1.15,
@@ -3133,7 +3133,7 @@ if section == "Stock & Achats":
                 hovertemplate="%{y}<br>%{customdata}<extra></extra>"
             ))
             fig.update_layout(yaxis=dict(autorange="reversed"), showlegend=False)
-            st.plotly_chart(_st_style_fig(fig, 209), key="ch_fig_13", use_container_width=True)
+            st.plotly_chart(_st_style_fig(fig), key="ch_fig_13", use_container_width=True)
         else:
             st.info("Aucun produit.")
 
@@ -3155,8 +3155,8 @@ if section == "Stock & Achats":
                 hovertemplate="<b>%{label}</b><br>%{customdata} — %{percent}<extra></extra>",
             ))
             fig_donut.update_layout(
-                margin=dict(l=10, r=10, t=10, b=10),
-                height=220,
+                margin=dict(l=6, r=6, t=6, b=6),
+                height=185,
                 paper_bgcolor=ST_CARD,
                 plot_bgcolor=ST_CARD,
             )
@@ -3230,10 +3230,10 @@ if section == "Stock & Achats":
             ))
             fig_tm.update_layout(
                 margin=dict(l=0, r=0, t=0, b=0),
-                height=209,
+                height=175,
                 font=dict(family="Inter, sans-serif", size=10),
             )
-            st.plotly_chart(_st_style_fig(fig_tm, 209), key="ch_fig_12", use_container_width=True)
+            st.plotly_chart(_st_style_fig(fig_tm, 175), key="ch_fig_12", use_container_width=True)
 
     spacer(15)
 
@@ -3298,7 +3298,7 @@ if section == "Stock & Achats":
                 margin=dict(l=10, r=20, t=10, b=50),
                 hovermode="y",
             )
-            st.plotly_chart(_st_style_fig(fig, 220), key="ch_fig_14", use_container_width=True)
+            st.plotly_chart(_st_style_fig(fig), key="ch_fig_14", use_container_width=True)
         else:
             st.info("Aucun retour sur la période.")
 
@@ -3324,7 +3324,7 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: %{text}<extra></extra>"
             ))
-            fig.update_layout(height=220, margin=dict(l=10, r=30, t=10, b=10),
+            fig.update_layout(height=185, margin=dict(l=10, r=30, t=8, b=6),
                 xaxis=dict(showgrid=True, gridcolor=ST_GRID, tickfont=dict(color=ST_MUTED), range=[0, max_s * 1.3]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=ST_MUTED), showgrid=False),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD, bargap=0.4,
@@ -3356,7 +3356,7 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: %{text}<extra></extra>"
             ))
-            fig.update_layout(height=220, margin=dict(l=10, r=30, t=10, b=10),
+            fig.update_layout(height=185, margin=dict(l=10, r=30, t=8, b=6),
                 xaxis=dict(showgrid=True, gridcolor=ST_GRID, tickfont=dict(color=ST_MUTED), range=[0, max_s * 1.3]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=ST_MUTED), showgrid=False),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD, bargap=0.4,
@@ -3641,7 +3641,7 @@ if section == "Trésorerie":
             ))
             fig.add_hline(y=0, line_dash="dot", line_color=TR_NEGATIVE, opacity=0.4)
             _fmt_ticks(fig, "y")
-            st.plotly_chart(_tr_style_fig(fig, 260), key="tr_chart_1", use_container_width=True)
+            st.plotly_chart(_tr_style_fig(fig), key="tr_chart_1", use_container_width=True)
         else:
             st.info("Aucune donnée de trésorerie.")
 
@@ -3679,7 +3679,7 @@ if section == "Trésorerie":
             ))
             fig.update_layout(
                 barmode="group", bargap=0.3, bargroupgap=0.15,
-                height=260, margin=dict(l=10, r=10, t=40, b=36),
+                height=210, margin=dict(l=10, r=10, t=40, b=36),
                 plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
                 legend=dict(orientation="h", yanchor="bottom", y=1.04,
@@ -3739,8 +3739,8 @@ if section == "Trésorerie":
                 cliponaxis=False,
             ))
             fig_spend.update_layout(
-                height=220,
-                margin=dict(l=8, r=80, t=10, b=36),
+                height=185,
+                margin=dict(l=8, r=80, t=8, b=6),
                 paper_bgcolor=TR_CARD,
                 plot_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
@@ -3793,7 +3793,7 @@ if section == "Trésorerie":
             ))
             fig6.update_layout(margin=dict(l=5, r=5, t=5, b=5))
             st.markdown('<div id="chart-tr6">', unsafe_allow_html=True)
-            st.plotly_chart(_tr_style_fig(fig6, height=220, pie=True), key="tr_chart_6", on_select="ignore", use_container_width=True)
+            st.plotly_chart(_tr_style_fig(fig6, height=185, pie=True), key="tr_chart_6", on_select="ignore", use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Pas assez de données.")
@@ -3832,7 +3832,7 @@ if section == "Trésorerie":
             ))
             fig.add_hline(y=0, line_dash="dot", line_color=TR_MUTED, opacity=0.4)
             fig.update_layout(
-                height=220, margin=dict(l=10, r=10, t=10, b=36),
+                height=185, margin=dict(l=10, r=10, t=8, b=6),
                 plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
                 legend=dict(orientation="h", yanchor="bottom", y=1.04,
@@ -3899,7 +3899,7 @@ if section == "Trésorerie":
                 customdata=[_fmt(v) for v in unpaid],
                 hovertemplate="%{x}<br>Cumul créances : <b>%{customdata}</b><extra></extra>"
             ))
-            st.plotly_chart(_tr_style_fig(fig, 220), key="tr_chart_3", use_container_width=True)
+            st.plotly_chart(_tr_style_fig(fig), key="tr_chart_3", use_container_width=True)
         else:
             st.info("Pas assez de données.")
 
@@ -3954,14 +3954,14 @@ if section == "Trésorerie":
                     hovertemplate="%{x}<br>Prévision : <b>%{customdata}</b><extra></extra>"))
                 fig.add_hline(y=0, line_dash="dot", line_color=TR_NEGATIVE, opacity=0.4)
                 fig.update_layout(
-                    height=220,
+                    height=185,
                     xaxis=dict(type="category", categoryorder="array",
                                categoryarray=hist_dates + fore_labels,
                                tickangle=-30, tickfont=dict(size=8)),
                     yaxis=dict(rangemode="tozero",
                                zeroline=True, zerolinecolor=TR_GRID),
                 )
-                fig_custom = _tr_style_fig(fig, 220)
+                fig_custom = _tr_style_fig(fig, 185)
                 _fmt_ticks(fig_custom, "y")
                 fig_custom.update_layout(
                     margin=dict(t=70),
@@ -4021,7 +4021,7 @@ if section == "Trésorerie":
             }
         ))
         fig.update_layout(
-            height=220, margin=dict(l=10, r=10, t=10, b=10),
+            height=185, margin=dict(l=10, r=10, t=6, b=6),
             paper_bgcolor=TR_CARD,
             font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
         )
