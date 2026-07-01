@@ -1556,7 +1556,7 @@ def write_anomalies_sheet(df: pd.DataFrame) -> None:
     except:
         pass
 
-@st.cache_data(show_spinner="Chargement du Google Sheet…", ttl=600)
+@st.cache_data(show_spinner="Chargement du Google Sheet…")
 def load_all_sheets() -> Dict[str, pd.DataFrame]:
     client = _get_client()
     try:
