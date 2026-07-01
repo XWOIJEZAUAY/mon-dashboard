@@ -519,7 +519,7 @@ APP_CSS = f"""
         white-space: nowrap;
     }}
     .kpi-value {{
-        font-size: 22px; font-weight: 700; color: {INK};
+        font-size: 18px; font-weight: 700; color: {INK};
         font-family: 'Inter','Aptos',sans-serif;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
@@ -537,7 +537,7 @@ APP_CSS = f"""
         background: {CL_CARD} !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
         border-radius: 14px !important;
-        padding: 20px !important;
+        padding: 12px !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
     }}
     .cli-kpi::before {{
@@ -550,7 +550,7 @@ APP_CSS = f"""
         background: #1E293B !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
         border-radius: 14px !important;
-        padding: 20px !important;
+        padding: 12px !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
     }}
     .tr-kpi::before {{
@@ -563,7 +563,7 @@ APP_CSS = f"""
         background: #1E293B !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
         border-radius: 14px !important;
-        padding: 20px !important;
+        padding: 12px !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
     }}
     .st-kpi::before {{
