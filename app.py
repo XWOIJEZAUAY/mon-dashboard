@@ -22,6 +22,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 import os
+import hashlib
 
 # Configuration
 SHEET_ID = "1kLvCbD-uNMD-ljwZOj8ZtcMu_-irjRp_TMcVNncAlP0"
@@ -125,8 +126,25 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# Authentification privée
-if not st.session_state.get("auth_ok", False):
+# Authentification privée (persistée via query_params)
+def _compute_auth_token():
+    raw = f"{st.secrets.get('auth_username','')}:{st.secrets.get('auth_password','')}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+def _check_auth():
+    if st.session_state.get("auth_ok"):
+        return True
+    try:
+        qp = st.query_params
+        token = qp.get("auth_token")
+        if token and token == _compute_auth_token():
+            st.session_state.auth_ok = True
+            return True
+    except Exception:
+        pass
+    return False
+
+if not _check_auth():
     st.markdown("""
     <style>
         div[data-testid="stApp"] {
@@ -265,6 +283,10 @@ if not st.session_state.get("auth_ok", False):
     if st.button("Connexion", use_container_width=True, type="primary"):
         if user == st.secrets.get("auth_username") and pwd == st.secrets.get("auth_password"):
             st.session_state.auth_ok = True
+            try:
+                st.query_params["auth_token"] = _compute_auth_token()
+            except Exception:
+                pass
             st.rerun()
         else:
             st.error("Identifiants incorrects")
@@ -2213,6 +2235,11 @@ if section == "Ventes":
     sales_prev_unique = sales_prev_unique[sales_prev_unique["sale_total"] > 0]
     revenu_cur   = sales_cur_unique["sale_total"].sum()
     revenu_prev  = sales_prev_unique["sale_total"].sum()
+    # Filtrer les items pour n'inclure que les ventes avec total > 0
+    valid_sale_ids_cur = set(sales_cur_unique["sale_id"].unique())
+    valid_sale_ids_prev = set(sales_prev_unique["sale_id"].unique())
+    sf_cur_v = sf_cur_v[sf_cur_v["sale_id"].isin(valid_sale_ids_cur)]
+    sf_prev_v = sf_prev_v[sf_prev_v["sale_id"].isin(valid_sale_ids_prev)]
     ca_items_cur   = sf_cur_v["item_total"].fillna(0).sum()
     ca_items_prev  = sf_prev_v["item_total"].fillna(0).sum() if not sf_prev_v.empty else 0
     croissance     = ((revenu_cur - revenu_prev) / revenu_prev * 100) if revenu_prev else 0.0
@@ -2350,6 +2377,12 @@ if section == "Ventes":
     const REGION_NAMES = %REGION_NAMES%;
     const KPI_BASE = %KPI_BASE%;
     const FILTER_LABELS = {"region":"Region","mois":"Mois","produit":"Produit","categorie":"Categorie","paiement":"Paiement","date":"Date"};
+    function fmtK(v) {
+        if (v >= 1e9) return (v/1e9).toFixed(1)+'B';
+        if (v >= 1e6) return (v/1e6).toFixed(2)+'M';
+        if (v >= 1e3) return (v/1e3).toFixed(1)+'K';
+        return v.toFixed(0);
+    }
     let legend = null;
     // ---- DIMENSION DETECTION ----
     function detectDim(chartEl) {
@@ -2433,13 +2466,13 @@ if section == "Ventes":
             }
             all.forEach(r => {
                 const key = String(r['sale_date']).substring(0,10);
-                if (dayAgg[key] !== undefined) dayAgg[key] += (+r['item_total']||0)/1000;
+                if (dayAgg[key] !== undefined) dayAgg[key] += (+r['item_total']||0);
             });
             const fDayAgg = {};
             filtered.forEach(r => {
                 const key = String(r['sale_date']).substring(0,10);
                 if (fDayAgg[key] === undefined) fDayAgg[key] = 0;
-                fDayAgg[key] += (+r['item_total']||0)/1000;
+                fDayAgg[key] += (+r['item_total']||0);
             });
             const x1 = days, y1 = days.map(d => fDayAgg[d] || 0);
             const y1full = days.map(d => dayAgg[d] || 0);
@@ -2448,13 +2481,15 @@ if section == "Ventes":
                 x: x1, y: y1, fill: 'tozeroy',
                 line: {color: '#D97706', width: 2.5},
                 fillcolor: 'rgba(217,119,6,0.2)',
-                hovertemplate: '%{x|%d %b %Y}<br>%{y:,.0f}k<extra></extra>',
+                hovertemplate: '%{x|%d %b %Y}<br>%{customdata[0]}<extra></extra>',
+                customdata: y1.map(v => [fmtK(v)]),
             }];
             if (dim || val) {
                 g1Data.unshift({
                     type: 'scatter', mode: 'lines', name: 'Total',
                     x: x1, y: y1full, line: {color: '#57534E', width: 1.5, dash: 'dot'},
-                    hovertemplate: '%{x|%d %b %Y}<br>%{y:,.0f}k<extra></extra>',
+                    hovertemplate: '%{x|%d %b %Y}<br>%{customdata[0]}<extra></extra>',
+                    customdata: y1full.map(v => [fmtK(v)]),
                 });
             }
             var h = document.documentElement.style.getPropertyValue('--chart-h');
@@ -2467,7 +2502,7 @@ if section == "Ventes":
                 showlegend: dim || val ? true : false,
                 legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
                 xaxis: {tickformat: '%d', showgrid: false, tickangle: 0},
-                yaxis: {tickformat: '.0f', showgrid: true, gridcolor: '#3C3528', nticks: 5},
+                yaxis: {showgrid: true, gridcolor: '#3C3528', nticks: 5},
             }, {transition: {duration: 500, easing: 'cubic-in-out'}});
         }
         // G4: Categories pie
@@ -2507,21 +2542,23 @@ if section == "Ventes":
             const payMap = {};
             payAgg.forEach(p => payMap[p['method']] = p['amount']);
             const pLabels = payAll.map(p => (p['method']||'(N/A)').trim());
-            const pVals = payAll.map(p => p['amount']/1000);
+            const pVals = payAll.map(p => p['amount']);
             const pMarkerColors = ['#F59E0B','#FBBF24','#D97706','#B45309','#92400E','#FCD34D'];
             const pFinalColors = pLabels.map((l,i) => payMap[l] ? pMarkerColors[i % pMarkerColors.length] : '#D0D0D0');
-            const totalK = pVals.reduce((s,v) => s+v, 0);
+            const totalVal = pVals.reduce((s,v) => s+v, 0);
             Plotly.react(g8El, [{
                 type: 'pie', labels: pLabels, values: pVals,
                 hole: 0.5, textinfo: 'label+percent',
                 texttemplate: '%{label}<br>%{percent}',
                 marker: {colors: pFinalColors, line: {color: '#292524', width: 2}},
                 textfont: {size: 9, color: pFinalColors.map(c => c === '#D0D0D0' ? '#999' : '#FAFAF9')},
+                customdata: pVals.map(v => fmtK(v)),
+                hovertemplate: '<b>%{label}</b><br>%{customdata} (%{percent})<extra></extra>',
             }], {
                 height: h, margin: {l:4, r:4, t:24, b:28},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
-                annotations: [{text: '<b>Total</b><br>'+totalK.toFixed(0)+'k', x:0.5, y:0.5, showarrow:false, font:{size:10,color:'#FAFAF9'}}],
+                annotations: [{text: '<b>Total</b><br>'+fmtK(totalVal), x:0.5, y:0.5, showarrow:false, font:{size:10,color:'#FAFAF9'}}],
                 showlegend: true, legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
             }, {transition: {duration: 500}});
         }
@@ -2534,23 +2571,23 @@ if section == "Ventes":
             prodFilt.forEach(p => prodMap[p['product_name']] = p['item_total']);
             prodAll.sort((a,b) => a['item_total']-b['item_total']);
             const pNames = prodAll.map(p => (p['product_name']||'').slice(0,12));
-            const pValsK = prodAll.map(p => p['item_total']/1000);
+            const pVals = prodAll.map(p => p['item_total']);
             const pColorsB = prodAll.map(p => prodMap[p['product_name']] ? '#D97706' : '#D0D0D0');
             const pOpac = prodAll.map(p => prodMap[p['product_name']] ? 1 : 0.35);
             Plotly.react(g5El, [{
-                type: 'bar', x: pValsK, y: pNames, orientation: 'h',
+                type: 'bar', x: pVals, y: pNames, orientation: 'h',
                 marker: {color: pColorsB, opacity: pOpac},
-                text: pValsK.map(v => v.toFixed(0)+'k'),
+                text: pVals.map(fmtK),
                 textposition: 'inside', insidetextanchor: 'middle',
                 textfont: {size: 8, color: pOpac.map(o => o < 0.5 ? '#999' : 'white')},
                 width: 0.85,
-                hovertemplate: '%{y}<br>%{x:,.0f}k<extra></extra>',
+                hovertemplate: '%{y}<br>%{text}<extra></extra>',
             }], {
                 height: h, margin: {l:2, r:2, t:24, b:18},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
                 hovermode: 'y unified',
-                xaxis: {title: null, tickformat: ',.0f', showgrid: true, gridcolor: '#3C3528', zeroline: false},
+                xaxis: {title: null, showgrid: true, gridcolor: '#3C3528', zeroline: false},
                 yaxis: {title: null, autorange: 'reversed', tickfont: {size: 8}, showgrid: false},
                 bargap: 0.05,
             }, {transition: {duration: 500}});
@@ -2569,8 +2606,8 @@ if section == "Ventes":
             });
             const allEntries = Object.entries(dayAggAll).sort((a,b) => b[1]-a[1]).slice(0,10);
             const g6labels = allEntries.map(e => e[0].substring(5));
-            const g6full = allEntries.map(e => e[1]/1000);
-            const g6filt = allEntries.map(e => (dayAggFil[e[0]]||0)/1000);
+            const g6full = allEntries.map(e => e[1]);
+            const g6filt = allEntries.map(e => (dayAggFil[e[0]]||0));
             const traces = [];
             if (hasFilter) {
                 traces.push({type: 'bar', y: g6labels, x: g6full, orientation: 'h',
@@ -2579,16 +2616,16 @@ if section == "Ventes":
             }
             traces.push({type: 'bar', y: g6labels, x: g6filt, orientation: 'h',
                 marker: {color: g6filt, colorscale: [[0,'#78350F'],[0.5,'#D97706'],[1,'#FBBF24']]},
-                text: g6filt.map(v => v.toFixed(0)+'k'),
+                text: g6filt.map(fmtK),
                 textposition: 'inside', insidetextanchor: 'middle',
                 textfont: {size: 10, color: 'white'},
                 width: 0.3,
-                hovertemplate: '%{y}: %{x:,.0f}k<extra></extra>'});
+                hovertemplate: '%{y}: %{text}<extra></extra>'});
             Plotly.react(g6El, traces, {
                 height: h, margin: {l:4, r:4, t:20, b:8},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
                 font: {family: 'Inter, sans-serif', size: 10, color: '#FAFAF9'},
-                xaxis: {title: null, tickformat: ',.0f', showgrid: true, gridcolor: '#3C3528'},
+                xaxis: {title: null, showgrid: true, gridcolor: '#3C3528'},
                 yaxis: {title: null, autorange: 'reversed', tickfont: {size: 9}, showgrid: false},
                 bargap: 0.02,
             }, {transition: {duration: 500}});
@@ -2599,12 +2636,12 @@ if section == "Ventes":
             const caAll = {}, caFil = {}, maFil = {};
             all.forEach(r => {
                 const key = String(r['sale_date']).substring(0,10);
-                caAll[key] = (caAll[key]||0) + (+r['item_total']||0)/1000;
+                caAll[key] = (caAll[key]||0) + (+r['item_total']||0);
             });
             filtered.forEach(r => {
                 const key = String(r['sale_date']).substring(0,10);
-                caFil[key] = (caFil[key]||0) + (+r['item_total']||0)/1000;
-                maFil[key] = (maFil[key]||0) + (+r['margin_net']||0)/1000;
+                caFil[key] = (caFil[key]||0) + (+r['item_total']||0);
+                maFil[key] = (maFil[key]||0) + (+r['margin_net']||0);
             });
             const allDates = Object.keys(caAll).sort();
             const caFull = allDates.map(d => caAll[d] || 0);
@@ -2617,13 +2654,15 @@ if section == "Ventes":
                     hoverinfo: 'skip', showlegend: true});
             }
             traces.push({type: 'bar', x: allDates, y: caVals, name: 'Ventes',
-                marker: {color: '#D97706'}, text: caVals.map(v => v.toFixed(0)+'k'),
-                textposition: 'inside', insidetextanchor: 'middle', textfont: {size: 9, color: 'white'}});
+                marker: {color: '#D97706'}, text: caVals.map(fmtK),
+                textposition: 'inside', insidetextanchor: 'middle', textfont: {size: 9, color: 'white'},
+                customdata: caVals.map(v => [fmtK(v)]),
+                hovertemplate: '%{x|%d %b %Y}<br>Ventes: %{customdata[0]}<extra></extra>'});
             if (hasFilter) {
                 const maAll = {};
                 all.forEach(r => {
                     const key = String(r['sale_date']).substring(0,10);
-                    maAll[key] = (maAll[key]||0) + (+r['margin_net']||0)/1000;
+                    maAll[key] = (maAll[key]||0) + (+r['margin_net']||0);
                 });
                 const maFull = allDates.map(d => maAll[d] || 0);
                 traces.push({type: 'scatter', x: allDates, y: maFull, mode: 'lines+markers',
@@ -2636,7 +2675,8 @@ if section == "Ventes":
                 name: 'Marge', yaxis: 'y2',
                 line: {color: '#FBBF24', width: 2.5, dash: 'dot'},
                 marker: {symbol: 'circle', size: 6},
-                hovertemplate: '%{x|%d %b %Y}<br>%{y:,.0f}k<extra></extra>'});
+                customdata: maVals.map(v => [fmtK(v)]),
+                hovertemplate: '%{x|%d %b %Y}<br>Marge: %{customdata[0]}<extra></extra>'});
             Plotly.react(g2El, traces, {
                 height: h, margin: {l:2, r:2, t:26, b:12},
                 plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
@@ -2644,8 +2684,8 @@ if section == "Ventes":
                 hovermode: 'x unified',
                 barmode: 'group', bargap: 0.05, bargroupgap: 0.02,
                 showlegend: true, legend: {orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center', yanchor: 'top'},
-                yaxis: {title: null, tickformat: '.0f', showgrid: true, gridcolor: '#3C3528', nticks: 5},
-                yaxis2: {title: null, tickformat: '.0f', showgrid: false, overlaying: 'y', side: 'right', nticks: 5},
+                yaxis: {title: null, showgrid: true, gridcolor: '#3C3528', nticks: 5},
+                yaxis2: {title: null, showgrid: false, overlaying: 'y', side: 'right', nticks: 5},
                 xaxis: {title: null, tickformat: '%d', showgrid: false, tickangle: 0},
             }, {transition: {duration: 500}});
         }
@@ -2664,9 +2704,9 @@ if section == "Ventes":
                 return hasData ? (regAll[reg]||0) / maxCA : 0;
             });
             const mapText = regionNames.map(reg => {
-                const ca = (regAll[reg]||0)/1000;
-                const fil = (regFil[reg]||0)/1000;
-                return reg+'<br>'+ca.toFixed(0)+'k'+(hasFilter ? ' (filtr: '+fil.toFixed(0)+'k)' : '');
+                const ca = (regAll[reg]||0);
+                const fil = (regFil[reg]||0);
+                return reg+'<br>'+fmtK(ca)+(hasFilter ? ' (filtr: '+fmtK(fil)+')' : '');
             });
             Plotly.react(g3El, [{
                 type: 'choropleth', locations: regionNames, z: zVals,
@@ -3005,14 +3045,13 @@ if section == "Clients":
                    .agg(CA=("sale_total", "sum")).reset_index()
                    .sort_values("CA", ascending=False).head(10))
             agg["CA"] = agg["CA"].fillna(0)
-            agg["CA_k"] = agg["CA"] / 1000
-            agg["CA_k_label"] = agg["CA"].apply(_fmt).tolist()
+            agg["CA_label"] = agg["CA"].apply(_fmt).tolist()
             fig = go.Figure()
-            clr = agg["CA_k"]
-            max_k = agg["CA_k"].max()
-            fig.add_trace(go.Bar(y=agg["client_name"], x=agg["CA_k"], orientation="h",
+            clr = agg["CA"]
+            max_ca = agg["CA"].max()
+            fig.add_trace(go.Bar(y=agg["client_name"], x=agg["CA"], orientation="h",
                 marker=dict(color=clr, colorscale=[[0, '#A5B4FC'], [1, '#6366F1']], showscale=False),
-                text=agg["CA_k_label"], textposition="outside",
+                text=agg["CA_label"], textposition="outside",
                 texttemplate="%{text}",
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: <b>%{text}</b><extra></extra>"))
@@ -3023,7 +3062,7 @@ if section == "Clients":
                 if not cli_name_row.empty:
                     fig.update_layout(title=dict(text=f"Top 10 CA — {cli_name_row.iloc[0]}"))
             fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=20, b=4),
-                xaxis=dict(ticksuffix="K", showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), range=[0, max_k * 1.25]),
+                xaxis=dict(showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), range=[0, max_ca * 1.25]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
                 font=dict(family="Inter, sans-serif", size=11, color=CL_INK))
@@ -4108,16 +4147,15 @@ if section == "Trésorerie":
                 st.stop()
             names_clean = spend["supplier_name"].tolist()
             vals_raw = spend["purchase_total"].tolist()
-            vals_k = [v / 1000 for v in vals_raw]
-            labels_k = [_fmt(v) for v in vals_raw]
+            labels_raw = [_fmt(v) for v in vals_raw]
             fig_spend = go.Figure()
             fig_spend.add_trace(go.Bar(
-                x=vals_k,
+                x=vals_raw,
                 y=names_clean,
                 orientation="h",
                 marker=dict(color=TR_PRIMARY, line=dict(width=0)),
-                text=labels_k,
-                customdata=labels_k,
+                text=labels_raw,
+                customdata=labels_raw,
                 textposition="outside",
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="<b>%{y}</b> : %{customdata}<extra></extra>",
@@ -4130,8 +4168,7 @@ if section == "Trésorerie":
                 plot_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
                 xaxis=dict(
-                    ticksuffix="K",
-                    range=[0, max(vals_k) * 1.45 if vals_k else 1],
+                    range=[0, max(vals_raw) * 1.45 if vals_raw else 1],
                     showgrid=True,
                     gridcolor=TR_GRID,
                     zeroline=True,
