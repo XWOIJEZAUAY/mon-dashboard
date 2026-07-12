@@ -101,11 +101,11 @@ st.set_page_config(
     page_title="ERP Dashboard",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
-# Hauteurs compactes globales (Power BI style)
-_CHART_H = 125
+# Hauteur fixe pour tous les graphiques (indépendante du volume de données)
+_CHART_H = 220
 _KPI_H = 68
 
 # Détection navigateur + variables CSS
@@ -302,18 +302,18 @@ MUTED        = "#A8A29E"
 BG           = "#1C1917"
 CARD         = "#292524"
 GRID         = "#44403C"
-HEADER_FROM  = "#78350F"
-HEADER_TO    = "#B45309"
-ICON_BG      = "#92400E"
-KPI_ACCENT_FROM = "#F59E0B"
-KPI_ACCENT_TO   = "#78350F"
-POSITIVE = "#D97706"
+HEADER_FROM  = "#F59E0B"
+HEADER_TO    = "#FBBF24"
+ICON_BG      = "#292524"
+KPI_ACCENT_FROM = "#FCD34D"
+KPI_ACCENT_TO   = "#F59E0B"
+POSITIVE = "#10B981"
 WARNING  = "#F59E0B"
-NEGATIVE = "#B45309"
-BI_PALETTE = ["#F59E0B", "#FBBF24", "#FCD34D", "#D97706", "#B45309",
-              "#78350F", "#FDE68A", "#92400E", "#FEF3C7", "#451A03"]
-SEQ_BLUE   = ["#FEF3C7", "#FDE68A", "#FCD34D", "#FBBF24", "#F59E0B",
-              "#D97706", "#B45309", "#92400E", "#78350F"]
+NEGATIVE = "#EF4444"
+BI_PALETTE = ["#F59E0B", "#FBBF24", "#FCD34D", "#FDE68A", "#FEF3C7",
+              "#292524", "#44403C", "#FAFAF9", "#A8A29E", "#1C1917"]
+SEQ_BLUE   = ["#E8EDF5", "#8A92A6", "#4DA8FF", "#37C6FF", "#118DFF",
+              "#0E6FD8", "#1A1F2A", "#2A2F3A", "#0B0E14"]
 
 # Palette clients
 CL_PRIMARY    = "#6366F1"
@@ -323,14 +323,14 @@ CL_LIGHT      = "#A5B4FC"
 CL_POSITIVE   = "#10B981"
 CL_NEGATIVE   = "#EF4444"
 CL_WARNING    = "#F59E0B"
-CL_BG         = "#1B2433"
+CL_BG         = "#0F172A"
 CL_CARD       = "#1E293B"
 CL_INK        = "#FFFFFF"
 CL_MUTED      = "#94A3B8"
 CL_GRID       = "rgba(148,163,184,0.10)"
 CL_TOOLTIP_BG = "#202B3C"
-CL_BI         = ["#6366F1", "#818CF8", "#A5B4FC", "#4F46E5", "#10B981",
-                  "#F59E0B", "#EF4444", "#C4B5FD"]
+CL_BI         = ["#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE", "#E0E7FF",
+                  "#10B981", "#EF4444", "#FFFFFF"]
 
 # Palette trésorerie
 TR_PRIMARY    = "#06B6D4"
@@ -340,14 +340,14 @@ TR_ACCENT2    = "#67E8F9"
 TR_POSITIVE   = "#10B981"
 TR_NEGATIVE   = "#EF4444"
 TR_WARNING    = "#F59E0B"
-TR_BG         = "#1B2433"
+TR_BG         = "#0F172A"
 TR_CARD       = "#1E293B"
 TR_INK        = "#FFFFFF"
 TR_MUTED      = "#94A3B8"
 TR_GRID       = "rgba(148,163,184,0.10)"
 TR_TOOLTIP_BG = "#202B3C"
-TR_BI         = ["#06B6D4", "#0891B2", "#22D3EE", "#67E8F9", "#10B981",
-                  "#EF4444", "#F59E0B", "#94A3B8"]
+TR_BI         = ["#06B6D4", "#0891B2", "#22D3EE", "#67E8F9", "#A5F3FC",
+                  "#10B981", "#EF4444", "#FFFFFF"]
 TR_CONFIG     = {"displayModeBar": True, "displaylogo": False, "scrollZoom": True,
                  "modeBarButtonsToRemove": ["sendDataToCloud"],
                  "modeBarButtonsToAdd": [["toImage"]],
@@ -362,14 +362,14 @@ ST_INFO       = "#37C6FF"
 ST_POSITIVE   = "#10B981"
 ST_WARNING    = "#F59E0B"
 ST_CRITICAL   = "#EF4444"
-ST_BG         = "#1B2433"
+ST_BG         = "#1E293B"
 ST_CARD       = "#1E293B"
 ST_INK        = "#FFFFFF"
 ST_MUTED      = "#94A3B8"
 ST_GRID       = "rgba(148,163,184,0.10)"
 ST_TOOLTIP_BG = "#202B3C"
-ST_BI         = ["#118DFF", "#0E6FD8", "#4DA8FF", "#7DB7FF", "#37C6FF",
-                  "#10B981", "#F59E0B", "#EF4444", "#94A3B8"]
+ST_BI         = ["#118DFF", "#4DA8FF", "#7DB7FF", "#0E6FD8", "#37C6FF",
+                  "#10B981", "#EF4444", "#FFFFFF"]
 
 def _fmt(v, zero=""):
     if pd.isna(v) or (isinstance(v, float) and v is float) or v is None:
@@ -535,9 +535,6 @@ APP_CSS = f"""
         padding-top: 0 !important;
     }}
     div[data-testid="stHeader"] {{
-        display: none !important;
-    }}
-    .stApp header {{
         display: none !important;
     }}
     .main > div:first-child > div:first-child {{
@@ -893,9 +890,6 @@ APP_CSS = f"""
         text-transform: uppercase; letter-spacing: 1px;
         margin-bottom: 6px;
     }}
-    .stSidebar div[data-testid="stButton"] {{
-        margin-bottom: 5px !important;
-    }}
     /* ── Sidebar Buttons ── */
     .stSidebar div[data-testid="stButton"] {{
         margin-bottom: 10px !important;
@@ -946,78 +940,7 @@ APP_CSS = f"""
         background: #4DA8FF !important;
         border-radius: 0 4px 4px 0 !important;
     }}
-    /* Sidebar icon backgrounds for nav buttons */
-    .stSidebar div[data-testid="stButton"]:nth-of-type(2) button {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'/%3E%3Ccircle cx='20' cy='21' r='1'/%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: 14px center !important;
-        background-size: 20px !important;
-        padding-left: 44px !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(3) button {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: 14px center !important;
-        background-size: 20px !important;
-        padding-left: 44px !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(4) button {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16.5 9.4 7.5 4.21'/%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/%3E%3Cpath d='m3.32 7.37 8.68 5.13 8.68-5.13'/%3E%3Cpath d='M12 22V12'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: 14px center !important;
-        background-size: 20px !important;
-        padding-left: 44px !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(5) button {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12V7H5a2 2 0 0 1 0-4h14v4'/%3E%3Cpath d='M3 5v14a2 2 0 0 0 2 2h16v-5'/%3E%3Cpath d='M18 12a2 2 0 0 0 0 4h4v-4Z'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: 14px center !important;
-        background-size: 20px !important;
-        padding-left: 44px !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(6) button {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='10' rx='2'/%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M12 7v4'/%3E%3Cline x1='8' x2='10' y1='16' y2='16'/%3E%3Cline x1='14' x2='16' y1='16' y2='16'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: 14px center !important;
-        background-size: 20px !important;
-        padding-left: 44px !important;
-    }}
-    /* Active nav buttons — white icons */
-    .stSidebar div[data-testid="stButton"]:nth-of-type(2) button[data-testid="baseButton-primary"] {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'/%3E%3Ccircle cx='20' cy='21' r='1'/%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'/%3E%3C/svg%3E"), linear-gradient(135deg, #0E6FD8, #118DFF) !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(3) button[data-testid="baseButton-primary"] {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E"), linear-gradient(135deg, #0E6FD8, #118DFF) !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(4) button[data-testid="baseButton-primary"] {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16.5 9.4 7.5 4.21'/%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/%3E%3Cpath d='m3.32 7.37 8.68 5.13 8.68-5.13'/%3E%3Cpath d='M12 22V12'/%3E%3C/svg%3E"), linear-gradient(135deg, #0E6FD8, #118DFF) !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(5) button[data-testid="baseButton-primary"] {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12V7H5a2 2 0 0 1 0-4h14v4'/%3E%3Cpath d='M3 5v14a2 2 0 0 0 2 2h16v-5'/%3E%3Cpath d='M18 12a2 2 0 0 0 0 4h4v-4Z'/%3E%3C/svg%3E"), linear-gradient(135deg, #0E6FD8, #118DFF) !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(6) button[data-testid="baseButton-primary"] {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='10' rx='2'/%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M12 7v4'/%3E%3Cline x1='8' x2='10' y1='16' y2='16'/%3E%3Cline x1='14' x2='16' y1='16' y2='16'/%3E%3C/svg%3E"), linear-gradient(135deg, #0E6FD8, #118DFF) !important;
-    }}
-    /* Single icon for Raffraichir button */
-    .stSidebar div[data-testid="stButton"]:nth-of-type(1) button {{
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='23 4 23 10 17 10'/%3E%3Cpath d='M20.49 15a9 9 0 1 1-2.12-9.36L23 10'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: 14px center !important;
-        background-size: 18px !important;
-        padding-left: 42px !important;
-        background: linear-gradient(135deg, #0E6FD8, #118DFF) !important;
-        border: none !important;
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-        box-shadow: 0 4px 12px rgba(17,141,255,0.25) !important;
-        border-radius: 12px !important;
-        font-size: 14px !important;
-    }}
-    .stSidebar div[data-testid="stButton"]:nth-of-type(1) button:hover {{
-        filter: brightness(1.08) !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 16px rgba(17,141,255,0.35) !important;
-    }}
+
     /* ── Selectbox ── */
     .stSidebar .stSelectbox label {{
         font-size: 13px !important;
@@ -1196,14 +1119,13 @@ def spacer(height: int = 8):
     st.markdown(f"<div style='height:{height}px'></div>", unsafe_allow_html=True)
 
 # Style des graphiques
-def style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
-    h = height if height is not None else _CHART_H
+def style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
-        height=h,
+        height=height,
         paper_bgcolor=CARD,
         plot_bgcolor=CARD,
-        font=dict(family="Inter, sans-serif", size=9, color=INK),
-        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
+        font=dict(family="Inter, sans-serif", size=10, color=INK),
+        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
                     font=dict(size=9, color=MUTED),
@@ -1230,7 +1152,7 @@ def style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Fi
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=10, color=INK, family="Inter, sans-serif"),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -1245,24 +1167,24 @@ def style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Fi
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=1.5, shape="spline", smoothing=0.6),
-        marker=dict(size=3, line=dict(width=0.5, color="#292524")),
+        line=dict(width=2, shape="spline", smoothing=0.6),
+        marker=dict(size=4, line=dict(width=1, color="#292524")),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=10, color=INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color="#292524", width=1)),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color="#292524", width=1.5)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color="#292524", width=0.5)),
-        textfont=dict(size=10, color=INK),
+        marker=dict(line=dict(color="#292524", width=1)),
+        textfont=dict(size=13, color=INK),
     )
     return fig
 
@@ -1578,8 +1500,9 @@ def write_anomalies_sheet(df: pd.DataFrame) -> None:
     except:
         pass
 
-@st.cache_data(show_spinner="Chargement du Google Sheet…")
+@st.cache_resource
 def load_all_sheets() -> Dict[str, pd.DataFrame]:
+    import time
     client = _get_client()
     try:
         sh = client.open_by_key(SHEET_ID)
@@ -1592,8 +1515,23 @@ def load_all_sheets() -> Dict[str, pd.DataFrame]:
         if sheet not in available:
             st.error(f"Feuille manquante dans le Google Sheet : **{sheet}**.")
             st.stop()
-        rows = available[sheet].get_all_records()
-        df = pd.DataFrame(rows)
+        for attempt in range(4):
+            try:
+                ws = available[sheet]
+                all_vals = ws.get_all_values()
+                break
+            except Exception:
+                if attempt < 3:
+                    time.sleep(2 ** (attempt + 1))
+                    continue
+                st.error(f"Erreur de lecture de la feuille **{sheet}** après 4 tentatives.")
+                st.stop()
+        if not all_vals or len(all_vals) < 2:
+            df = pd.DataFrame(columns=required_cols)
+        else:
+            headers = all_vals[0]
+            rows = all_vals[1:]
+            df = pd.DataFrame(rows, columns=headers)
         missing = [c for c in required_cols if c not in df.columns]
         if missing:
             st.error(
@@ -1601,10 +1539,12 @@ def load_all_sheets() -> Dict[str, pd.DataFrame]:
                 f"{', '.join(missing)}.\nColonnes trouvées : {list(df.columns)}"
             )
             st.stop()
+        df = df[required_cols]
         data[sheet] = _coerce(df, sheet)
     return data
 
-# Construction des vues jointes
+# Construction des vues jointes (cached — 4 merges)
+@st.cache_resource
 def build_sales_full(d: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     sales = d["Sales"].rename(columns={"id": "sale_id", "reference": "sale_reference",
                                        "total": "sale_total", "status": "sale_status",
@@ -1625,6 +1565,7 @@ def build_sales_full(d: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     df = df.merge(clients, on="client_id", how="left")
     return df
 
+@st.cache_resource
 def build_purchases_full(d: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     p = d["Purchases"].rename(columns={"id": "purchase_id", "total": "purchase_total",
                                        "status": "purchase_status",
@@ -1644,7 +1585,53 @@ def in_period(df: pd.DataFrame, col: str, start: datetime, end: datetime) -> pd.
     s = df[col]
     return df[(s >= pd.Timestamp(start)) & (s <= pd.Timestamp(end))]
 
-# Sidebar : filtre Mois et Année
+@st.cache_resource
+def compute_cost_map(d: Dict[str, pd.DataFrame]) -> dict:
+    pi_all = d["PurchaseItems"].copy()
+    if pi_all.empty:
+        return {}
+    pi_all["q"] = pd.to_numeric(pi_all["quantity"], errors="coerce").fillna(0)
+    pi_all["p"] = pd.to_numeric(pi_all["price"], errors="coerce").fillna(0)
+    pi_all["cost_total"] = pi_all["q"] * pi_all["p"]
+    pu_status = d["Purchases"]["status"].fillna("").str.lower()
+    pu_ok_ids = set(d["Purchases"].loc[pu_status.isin(
+        ["pending", "confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
+    pi_all = pi_all[pi_all["purchase_id"].isin(pu_ok_ids)]
+    _g = pi_all.groupby("product_id").agg(
+        cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
+    ).reset_index()
+    _g["unit_cost"] = np.where(_g["q_sum"] > 0, _g["cost_sum"] / _g["q_sum"], 0)
+    return dict(zip(_g["product_id"], _g["unit_cost"]))
+
+@st.cache_resource
+def load_geo_data():
+    import json as _json
+    geojson_path = Path(__file__).parent / "maroc.geojson"
+    villes_path = Path(__file__).parent / "villes.json"
+    has_geo = geojson_path.exists() and villes_path.exists()
+    geojson_str = "null"
+    vdf = pd.DataFrame()
+    region_map = {}
+    if has_geo:
+        with open(villes_path, "r", encoding="utf-8") as f:
+            vdata = _json.load(f)
+        vdf = pd.DataFrame(vdata)
+        vdf["ville_norm"] = (vdf["ville"].astype(str).str.strip()
+                              .str.normalize("NFKD").str.encode("ascii", "ignore")
+                              .str.decode("ascii").str.lower())
+        vdf["region_code"] = vdf["region"].astype(str)
+        region_map = {"1": "Tanger-Tetouan-Hoceima", "2": "Oriental",
+                       "3": "Fes-Meknes", "4": "Rabat-Sale-Kenitra",
+                       "5": "Beni Mellal-Khenifra", "6": "Casablanca-Settat",
+                       "7": "Marrakech-Safi", "8": "Daraa-Tafilelt",
+                       "9": "Souss Massa", "10": "Guelmim-Oued Noun",
+                       "11": "Laayoune-Saguia Hamra", "12": "Dakhla-Oued Eddahab"}
+        vdf["region_nom"] = vdf["region_code"].map(region_map).fillna(vdf["region"])
+        with open(geojson_path, "r", encoding="utf-8") as f:
+            geojson_str = f.read().replace('</','<\\/')
+    return has_geo, vdf, region_map, geojson_str
+
+# Sidebar : logo + filtres + navigation
 st.sidebar.markdown(
     f"""<div style="background:#1E293B;border-radius:14px;border:1px solid rgba(255,255,255,0.06);padding:18px 16px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.2);display:flex;align-items:center;gap:12px;">
     <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#0E6FD8,#118DFF);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -1659,11 +1646,8 @@ st.sidebar.markdown(
 </div>""",
     unsafe_allow_html=True,
 )
-if st.sidebar.button("Rafraîchir", key="sidebar_refresh", use_container_width=True):
-    st.cache_data.clear()
-    st.rerun()
+# Data loading
 data = load_all_sheets()
-
 sales_full = build_sales_full(data)
 purchases_full = build_purchases_full(data)
 all_years = sorted(sales_full["sale_date"].dt.year.dropna().unique())
@@ -1671,13 +1655,36 @@ if not all_years:
     st.error("Aucune date de vente trouvée.")
     st.stop()
 default_year = max(all_years)
+# Filters
 annee = st.sidebar.selectbox("année", all_years, index=all_years.index(default_year))
-st.sidebar.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 mois_options = ["Tous"] + [datetime(2000, m, 1).strftime("%B") for m in range(1, 13)]
 mois_selection = st.sidebar.selectbox("mois", mois_options, index=0)
-st.sidebar.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 exclude_refunded = st.sidebar.checkbox("Exclure ventes remboursées", value=False)
 st.sidebar.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+# Navigation (at bottom)
+st.sidebar.markdown("---")
+if "section" not in st.session_state:
+    st.session_state.section = "Ventes"
+section = st.session_state.section
+st.sidebar.markdown(
+    f"<div style='display:flex;align-items:center;gap:8px;margin:4px 0 10px 4px;'>"
+    f"<div style='width:6px;height:6px;border-radius:50%;background:#118DFF;'></div>"
+    f"<div style='color:#CBD5E1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;'>Sections</div>"
+    f"</div>",
+    unsafe_allow_html=True,
+)
+for _label, _key in [("Ventes","nav_v"),("Clients","nav_c"),("Stock & Achats","nav_s"),("Trésorerie","nav_t"),("AI Agent","nav_d")]:
+    _active = section == _label
+    if st.sidebar.button(_label, key=_key, use_container_width=True, type="primary" if _active else "secondary"):
+        st.session_state.section = _label
+        st.rerun()
+
+st.sidebar.markdown("---")
+if st.sidebar.button("Rafraîchir", key="sidebar_refresh", use_container_width=True):
+    st.cache_data.clear()
+    st.rerun()
 
 # Déterminer la période courante (start_dt, end_dt)
 if mois_selection == "Tous":
@@ -1724,12 +1731,12 @@ if filtres:
         if c2.button("✕", key=f"clear_{k}", help=f"Supprimer filtre {label}"):
             del st.session_state.filtres[k]
             st.rerun()
-    if st.sidebar.button("Effacer tous les filtres", type="primary", use_container_width=True):
+    if st.sidebar.button("Effacer tous les filtres", type="primary"):
         st.session_state.filtres = {}
         st.rerun()
 
-# Filtres période
-sf = sales_full.copy()
+# Filtres période (sales_full est déjà la version cache via @st.cache_resource)
+sf = sales_full
 if exclude_refunded:
     sf = sf[sf["sale_status"].fillna("").str.lower() != "refunded"]
 sf_cur = in_period(sf, "sale_date", start_dt, end_dt)
@@ -1742,38 +1749,14 @@ pu_cur = in_period(purchases_full, "purchase_date", start_dt, end_dt)
 filtres = st.session_state.get("filtres", {})
 if "region" in filtres:
     _reg_val = filtres["region"]
-    geojson_path = Path(__file__).parent / "maroc.geojson"
-    villes_path = Path(__file__).parent / "villes.json"
-    if geojson_path.exists() and villes_path.exists():
-        import json
-        with open(villes_path, "r", encoding="utf-8") as _f:
-            _vdata = json.load(_f)
-        _vdf = pd.DataFrame(_vdata)
-        _vdf["ville_norm"] = (_vdf["ville"].astype(str).str.strip()
-                              .str.normalize("NFKD")
-                              .str.encode("ascii", "ignore")
-                              .str.decode("ascii").str.lower())
-        _vdf["region_code"] = _vdf["region"].astype(str)
-        _region_mapping = {
-            "1": "Tanger-Tétouan-Al Hoceïma",
-            "2": "Oriental",
-            "3": "Fès-Meknès",
-            "4": "Rabat-Salé-Kénitra",
-            "5": "Béni Mellal-Khénifra",
-            "6": "Casablanca-Settat",
-            "7": "Marrakech-Safi",
-            "8": "Drâa-Tafilalet",
-            "9": "Souss-Massa",
-            "10": "Guelmim-Oued Noun",
-            "11": "Laâyoune-Sakia El Hamra",
-            "12": "Dakhla-Oued Ed-Dahab",
-        }
-        _vdf["region_nom"] = _vdf["region_code"].astype(str).map(_region_mapping)
+    _cf_has_geo, _cf_vdf, _cf_rmap, _ = load_geo_data()
+    if _cf_has_geo and not _cf_vdf.empty:
         _cli = data["Clients"][["id", "address"]].rename(columns={"id": "client_id", "address": "city_raw"})
-        _cli["city_norm"] = (_cli["city_raw"].fillna("").astype(str).str.strip()
+        _cli["city_name"] = _cli["city_raw"].fillna("").astype(str).str.split(",").str[-1].str.strip()
+        _cli["city_norm"] = (_cli["city_name"]
                              .str.lower().str.normalize("NFKD")
                              .str.encode("ascii", "ignore").str.decode("ascii"))
-        _cm = _cli.merge(_vdf[["ville_norm", "region_nom"]], left_on="city_norm", right_on="ville_norm", how="left")
+        _cm = _cli.merge(_cf_vdf[["ville_norm", "region_nom"]], left_on="city_norm", right_on="ville_norm", how="left")
         _reg_clients = _cm.loc[_cm["region_nom"] == _reg_val, "client_id"].unique()
         sf_cur = sf_cur[sf_cur["client_id"].isin(_reg_clients)]
         sf_prev = sf_prev[sf_prev["client_id"].isin(_reg_clients)]
@@ -1817,10 +1800,6 @@ def kpi_delta(cur: float, prev: float) -> str:
         return "—"
     return f"{(cur - prev) / prev * 100:+.1f}%"
 
-# Navigation
-if "section" not in st.session_state:
-    st.session_state.section = "Ventes"
-section = st.session_state.section
 _section_titles = {
     "Ventes": "des ventes",
     "Clients": "des clients",
@@ -1838,21 +1817,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.sidebar.markdown(
-    f"<div style='display:flex;align-items:center;gap:8px;margin:16px 0 10px 4px;'>"
-    f"<div style='width:6px;height:6px;border-radius:50%;background:#118DFF;'></div>"
-    f"<div style='color:#CBD5E1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;'>Sections</div>"
-    f"</div>",
-    unsafe_allow_html=True,
-)
-for _label, _key in [("Ventes","nav_v"),("Clients","nav_c"),("Stock & Achats","nav_s"),("Trésorerie","nav_t"),("AI Agent","nav_d")]:
-    _active = section == _label
-    if st.sidebar.button(_label, key=_key, use_container_width=True, type="primary" if _active else "secondary"):
-        st.session_state.section = _label
-        st.rerun()
-
-st.sidebar.markdown("---")
-
 # Global KPI helpers
 def _delta_html(cur, prev):
     if not prev:
@@ -1875,41 +1839,40 @@ def _kpi_card(icon, title, value, delta_html=""):
     </div>
     """
 
-def _cli_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
-    h = height if height is not None else _CHART_H
+def _cli_style_fig(fig: go.Figure, height: int = 185, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
-        height=h,
-        paper_bgcolor=CL_CARD,
-        plot_bgcolor=CL_CARD,
-        font=dict(family="Inter, sans-serif", size=9, color=CL_INK),
-        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
+        height=height,
+        paper_bgcolor=CARD,
+        plot_bgcolor=CARD,
+        font=dict(family="Inter, sans-serif", size=10, color=INK),
+        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
-                    font=dict(size=9, color=CL_MUTED),
-                    bgcolor="rgba(30,41,59,0.5)"),
-        colorway=CL_BI,
+                    font=dict(size=9, color=MUTED),
+                    bgcolor="rgba(41,37,36,0.5)"),
+        colorway=BI_PALETTE,
         hovermode="x unified",
-        hoverlabel=dict(bgcolor=CL_TOOLTIP_BG,
-                        bordercolor=CL_PRIMARY,
+        hoverlabel=dict(bgcolor="rgba(41,37,36,0.95)",
+                        bordercolor=PRIMARY,
                         font_size=10,
                         font_family="Inter, sans-serif",
-                        font_color=CL_INK),
+                        font_color=INK),
     )
     fig.update_xaxes(
         showgrid=False, zeroline=False, title=None,
-        showticklabels=True, tickfont=dict(size=8, color=CL_MUTED),
-        showline=True, linecolor=CL_GRID,
+        showticklabels=True, tickfont=dict(size=8, color=MUTED),
+        showline=True, linecolor=GRID,
     )
     fig.update_yaxes(
-        showgrid=True, gridcolor=CL_GRID, zeroline=False, title=None,
-        tickfont=dict(size=8, color=CL_MUTED),
+        showgrid=True, gridcolor=GRID, zeroline=False, title=None,
+        tickfont=dict(size=8, color=MUTED),
         showline=False,
     )
     fig.update_traces(
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=10, color=CL_INK, family="Inter, sans-serif"),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -1924,24 +1887,24 @@ def _cli_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> 
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=1.5, shape="spline", smoothing=0.6),
-        marker=dict(size=3, line=dict(width=0.5, color=CL_CARD)),
+        line=dict(width=2, shape="spline", smoothing=0.6),
+        marker=dict(size=4, line=dict(width=1, color="#292524")),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=10, color=CL_INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color=CL_CARD, width=1)),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color="#292524", width=1.5)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color=CL_CARD, width=0.5)),
-        textfont=dict(size=10, color=CL_INK),
+        marker=dict(line=dict(color="#292524", width=1)),
+        textfont=dict(size=13, color=INK),
     )
     return fig
 
@@ -2019,41 +1982,40 @@ def _tr_section_title(title: str, subtitle: str = ""):
         unsafe_allow_html=True,
     )
 
-def _tr_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
-    h = height if height is not None else _CHART_H
+def _tr_style_fig(fig: go.Figure, height: int = _CHART_H, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
-        height=h,
-        paper_bgcolor=TR_CARD,
-        plot_bgcolor=TR_CARD,
-        font=dict(family="Inter, sans-serif", size=9, color=TR_INK),
-        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
+        height=height,
+        paper_bgcolor=CARD,
+        plot_bgcolor=CARD,
+        font=dict(family="Inter, sans-serif", size=10, color=INK),
+        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
-                    font=dict(size=9, color=TR_MUTED),
-                    bgcolor="rgba(30,41,59,0.5)"),
-        colorway=TR_BI,
+                    font=dict(size=9, color=MUTED),
+                    bgcolor="rgba(41,37,36,0.5)"),
+        colorway=BI_PALETTE,
         hovermode="x unified",
-        hoverlabel=dict(bgcolor=TR_TOOLTIP_BG,
-                        bordercolor=TR_PRIMARY,
+        hoverlabel=dict(bgcolor="rgba(41,37,36,0.95)",
+                        bordercolor=PRIMARY,
                         font_size=10,
                         font_family="Inter, sans-serif",
-                        font_color=TR_INK),
+                        font_color=INK),
     )
     fig.update_xaxes(
         showgrid=False, zeroline=False, title=None,
-        showticklabels=True, tickfont=dict(size=8, color=TR_MUTED),
-        showline=True, linecolor=TR_GRID,
+        showticklabels=True, tickfont=dict(size=8, color=MUTED),
+        showline=True, linecolor=GRID,
     )
     fig.update_yaxes(
-        showgrid=True, gridcolor=TR_GRID, zeroline=False, title=None,
-        tickfont=dict(size=8, color=TR_MUTED),
+        showgrid=True, gridcolor=GRID, zeroline=False, title=None,
+        tickfont=dict(size=8, color=MUTED),
         showline=False,
     )
     fig.update_traces(
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=10, color=TR_INK, family="Inter, sans-serif"),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -2068,24 +2030,24 @@ def _tr_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> g
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=1.5, shape="spline", smoothing=0.6),
-        marker=dict(size=3, line=dict(width=0.5, color=TR_CARD)),
+        line=dict(width=2, shape="spline", smoothing=0.6),
+        marker=dict(size=4, line=dict(width=1, color="#292524")),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=10, color=TR_INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color=TR_CARD, width=1)),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color="#292524", width=1.5)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color=TR_CARD, width=0.5)),
-        textfont=dict(size=10, color=TR_INK),
+        marker=dict(line=dict(color="#292524", width=1)),
+        textfont=dict(size=13, color=INK),
     )
     return fig
 
@@ -2127,41 +2089,40 @@ def _st_section_title(title: str, subtitle: str = ""):
         unsafe_allow_html=True,
     )
 
-def _st_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> go.Figure:
-    h = height if height is not None else _CHART_H
+def _st_style_fig(fig: go.Figure, height: int = _CHART_H, *, pie: bool = False) -> go.Figure:
     fig.update_layout(
-        height=h,
-        paper_bgcolor=ST_CARD,
-        plot_bgcolor=ST_CARD,
-        font=dict(family="Inter, sans-serif", size=9, color=ST_INK),
-        margin=dict(l=2, r=2, t=14 if pie else 18, b=6 if pie else 10),
+        height=height,
+        paper_bgcolor=CARD,
+        plot_bgcolor=CARD,
+        font=dict(family="Inter, sans-serif", size=10, color=INK),
+        margin=dict(l=4, r=4, t=25 if pie else 30, b=12 if pie else 18),
         legend=dict(orientation="h", yanchor="bottom", y=1.02,
                     xanchor="center", x=0.5,
-                    font=dict(size=9, color=ST_MUTED),
-                    bgcolor="rgba(30,41,59,0.5)"),
-        colorway=ST_BI,
+                    font=dict(size=9, color=MUTED),
+                    bgcolor="rgba(41,37,36,0.5)"),
+        colorway=BI_PALETTE,
         hovermode="x unified",
-        hoverlabel=dict(bgcolor=ST_TOOLTIP_BG,
-                        bordercolor=ST_PRIMARY,
+        hoverlabel=dict(bgcolor="rgba(41,37,36,0.95)",
+                        bordercolor=PRIMARY,
                         font_size=10,
                         font_family="Inter, sans-serif",
-                        font_color=ST_INK),
+                        font_color=INK),
     )
     fig.update_xaxes(
         showgrid=False, zeroline=False, title=None,
-        showticklabels=True, tickfont=dict(size=8, color=ST_MUTED),
-        showline=True, linecolor=ST_GRID,
+        showticklabels=True, tickfont=dict(size=8, color=MUTED),
+        showline=True, linecolor=GRID,
     )
     fig.update_yaxes(
-        showgrid=True, gridcolor=ST_GRID, zeroline=False, title=None,
-        tickfont=dict(size=8, color=ST_MUTED),
+        showgrid=True, gridcolor=GRID, zeroline=False, title=None,
+        tickfont=dict(size=8, color=MUTED),
         showline=False,
     )
     fig.update_traces(
         selector=dict(type="bar"),
         marker_line_width=0,
         width=0.85,
-        textfont=dict(size=10, color=ST_INK, family="Inter, sans-serif"),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
         textposition="outside",
         cliponaxis=False,
     )
@@ -2176,46 +2137,64 @@ def _st_style_fig(fig: go.Figure, height: int = None, *, pie: bool = False) -> g
                 except (TypeError, ValueError):
                     pass
     try:
-        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=3)
+        fig.update_traces(selector=dict(type="bar"), marker_cornerradius=4)
     except (ValueError, TypeError):
         pass
     fig.update_layout(bargap=0.05, bargroupgap=0.02)
     fig.update_traces(
         selector=dict(type="scatter"),
-        line=dict(width=1.5, shape="spline", smoothing=0.6),
-        marker=dict(size=3, line=dict(width=0.5, color=ST_CARD)),
+        line=dict(width=2, shape="spline", smoothing=0.6),
+        marker=dict(size=4, line=dict(width=1, color="#292524")),
     )
     fig.update_traces(
         selector=dict(type="pie"),
-        textfont=dict(size=10, color=ST_INK, family="Inter, sans-serif"),
-        marker=dict(line=dict(color=ST_CARD, width=1)),
+        textfont=dict(size=13, color=INK, family="Inter, sans-serif"),
+        marker=dict(line=dict(color="#292524", width=1.5)),
     )
     fig.update_traces(
         selector=dict(type="funnel"),
-        marker=dict(line=dict(color=ST_CARD, width=0.5)),
-        textfont=dict(size=10, color=ST_INK),
+        marker=dict(line=dict(color="#292524", width=1)),
+        textfont=dict(size=13, color=INK),
     )
     return fig
+
+# ── Helpers chart sécurisés ──────────────────────────────────────────────
+
+def _empty_chart(height: int = _CHART_H, key: str = "") -> None:
+    st.markdown(
+        f"<div style='height:{height}px;"
+        f"background:rgba(15,23,42,0.4);border:1px dashed rgba(148,163,184,0.2);"
+        f"border-radius:12px;display:flex;align-items:center;justify-content:center;"
+        f"font-size:13px;color:#64748B;' key='{key}'>"
+        f"Données insuffisantes</div>",
+        unsafe_allow_html=True,
+    )
+
+def _empty_kpi():
+    st.markdown(
+        "<div style='padding:16px;background:rgba(15,23,42,0.4);"
+        "border:1px dashed rgba(148,163,184,0.2);border-radius:12px;"
+        "min-height:80px;display:flex;align-items:center;justify-content:center;"
+        "color:#64748B;font-size:13px;'>Données insuffisantes</div>",
+        unsafe_allow_html=True,
+    )
+
+def _safe_chart(fig, key: str = "", height: int = None, **kwargs):
+    h = height or _CHART_H
+    if fig is None:
+        _empty_chart(h, key=key)
+        return
+    kwargs.pop("use_container_width", None)
+    try:
+        st.plotly_chart(fig, key=key, use_container_width=True, **kwargs)
+    except Exception:
+        _empty_chart(h, key=key)
 
 # 1. Ventes — KPI + graphiques
 if section == "Ventes":
 
-    # Préparation des coûts
-    pi_all = data["PurchaseItems"].copy()
-    if not pi_all.empty:
-        pi_all["q"] = pd.to_numeric(pi_all["quantity"], errors="coerce").fillna(0)
-        pi_all["p"] = pd.to_numeric(pi_all["price"], errors="coerce").fillna(0)
-        pi_all["cost_total"] = pi_all["q"] * pi_all["p"]
-        pu_status = data["Purchases"]["status"].fillna("").str.lower()
-        pu_ok_ids = set(data["Purchases"].loc[pu_status.isin(["pending", "confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
-        pi_all = pi_all[pi_all["purchase_id"].isin(pu_ok_ids)]
-        _g = pi_all.groupby("product_id").agg(
-            cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
-        ).reset_index()
-        _g["unit_cost"] = np.where(_g["q_sum"] > 0, _g["cost_sum"] / _g["q_sum"], np.nan)
-        cost_map = dict(zip(_g["product_id"], _g["unit_cost"]))
-    else:
-        cost_map = {}
+    # Préparation des coûts (cached)
+    cost_map = compute_cost_map(data)
     def _enrich_with_cost(df: pd.DataFrame) -> pd.DataFrame:
         d = df.copy()
         d["unit_cost"] = d["product_id"].map(cost_map).fillna(0)
@@ -2251,31 +2230,16 @@ if section == "Ventes":
     import json as _json
     import base64
 
-    # Build client region and client city mappings for JS
+    # Build client region and client city mappings for JS (cached geo data)
+    _has_geo, _vdf, _region_map, _geojson_json = load_geo_data()
     _client_region_map = {}
     _client_city_map = {}
-    _geojson_path = Path(__file__).parent / "maroc.geojson"
-    _villes_path = Path(__file__).parent / "villes.json"
-    _has_geo = _geojson_path.exists() and _villes_path.exists()
-    if _has_geo:
-        with open(_villes_path, "r", encoding="utf-8") as _f:
-            _vdata = _json.load(_f)
-        _vdf = pd.DataFrame(_vdata)
-        _vdf["ville_norm"] = (_vdf["ville"].astype(str).str.strip()
-                              .str.normalize("NFKD").str.encode("ascii", "ignore")
-                              .str.decode("ascii").str.lower())
-        _vdf["region_code"] = _vdf["region"].astype(str)
-        _region_map = {"1": "Tanger-Tetouan-Hoceima", "2": "Oriental",
-                       "3": "Fes-Meknes", "4": "Rabat-Sale-Kenitra",
-                       "5": "Beni Mellal-Khenifra", "6": "Casablanca-Settat",
-                       "7": "Marrakech-Safi", "8": "Daraa-Tafilelt",
-                       "9": "Souss Massa", "10": "Guelmim-Oued Noun",
-                       "11": "Laayoune-Saguia Hamra", "12": "Dakhla-Oued Eddahab"}
-        _vdf["region_nom"] = _vdf["region_code"].map(_region_map).fillna(_vdf["region"])
+    if _has_geo and not _vdf.empty:
         _cli_addr = data["Clients"][["id", "address"]].rename(columns={"id": "client_id", "address": "city_raw"})
-        _cli_addr["city_norm"] = (_cli_addr["city_raw"].fillna("").astype(str).str.strip()
-                                  .str.lower().str.normalize("NFKD")
-                                  .str.encode("ascii", "ignore").str.decode("ascii"))
+        _cli_addr["city_name"] = _cli_addr["city_raw"].fillna("").astype(str).str.split(",").str[-1].str.strip()
+        _cli_addr["city_norm"] = (_cli_addr["city_name"]
+                                   .str.lower().str.normalize("NFKD")
+                                   .str.encode("ascii", "ignore").str.decode("ascii"))
         _cm = _cli_addr.merge(_vdf[["ville_norm", "region_nom"]], left_on="city_norm", right_on="ville_norm", how="left")
         _client_region_map = _cm.dropna(subset=["region_nom"]).set_index("client_id")["region_nom"].to_dict()
     _cli_city = data["Clients"][["id", "address"]].rename(columns={"id": "client_id"}).copy()
@@ -2297,11 +2261,6 @@ if section == "Ventes":
     if 'created_at' in _pay_js.columns:
         _pay_js['created_at'] = _pay_js['created_at'].astype(str)
     _pay_json = _pay_js.to_json(orient='records', date_format='iso').replace('</','<\\/') if len(_pay_js) else '[]'
-    # GeoJSON for map
-    _geojson_json = 'null'
-    if _has_geo:
-        with open(_geojson_path, "r", encoding="utf-8") as _f:
-            _geojson_json = _f.read().replace('</','<\\/')
     # KPI snapshot for JS
     _kpi_json = _json.dumps({
         'revenu': float(revenu_cur) if revenu_cur else 0,
@@ -2959,13 +2918,13 @@ if section == "Clients":
 
     spacer(6)
 
-    _cli_grid = f"rgba(148,163,184,{0.10})"
+    _cli_grid = CL_GRID
 
     if sf_cur.empty:
-        st.info("Aucune vente sur la période.")
+        _empty_chart(400, key="cli_no_data")
     else:
         # Row 1 ─ Évolution portefeuille | Fidélité | Top 10 clients
-        r1c1, r1c2, r1c3 = st.columns([1.0, 0.7, 0.7])
+        _, r1c1, r1c2, r1c3, _ = st.columns([0.04, 1.0, 0.8, 0.7, 0.04])
         with r1c1:
             nb_jours = (end_dt - start_dt).days
             freq_c = "D" if nb_jours <= 31 else "M"
@@ -3002,10 +2961,10 @@ if section == "Clients":
                                      customdata=[_fmt(v) for v in agg["cumul"]],
                                      hovertemplate="%{x}<br>Cumul : <b>%{customdata}</b><extra></extra>"))
             fig.update_layout(barmode="stack", bargap=0.2)
-            fig = _cli_style_fig(fig)
+            fig = _cli_style_fig(fig, _CHART_H)
             fig.update_traces(selector=dict(type="bar"), textposition="inside")
-            st.plotly_chart(fig, key="cli_chart_1",
-                            use_container_width=True)
+            _safe_chart(fig, key="cli_chart_1"
+)
 
         with r1c2:
             _cli_section_title("Fidélité client")
@@ -3034,10 +2993,10 @@ if section == "Clients":
             fig = go.Figure(data=[go.Pie(
                 labels=lbls, values=vals, hole=0,
                 marker_colors=colors, textinfo="value+percent")])
-            fig = _cli_style_fig(fig, pie=True)
+            fig = _cli_style_fig(fig, _CHART_H, pie=True)
             fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5))
-            st.plotly_chart(fig, key="cli_chart_2",
-                            use_container_width=True)
+            _safe_chart(fig, key="cli_chart_2"
+)
 
         with r1c3:
             _cli_section_title("Top 10 clients — CA")
@@ -3061,38 +3020,23 @@ if section == "Clients":
                 cli_name_row = agg.loc[agg["client_id"] == cli_fid, "client_name"]
                 if not cli_name_row.empty:
                     fig.update_layout(title=dict(text=f"Top 10 CA — {cli_name_row.iloc[0]}"))
-            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=20, b=4),
+            fig.update_layout(height=_CHART_H, margin=dict(l=10, r=30, t=30, b=6),
                 xaxis=dict(showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), range=[0, max_ca * 1.25]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
                 font=dict(family="Inter, sans-serif", size=11, color=CL_INK))
             fig.update_traces(cliponaxis=False)
-            st.plotly_chart(fig, key="cli_chart_3", use_container_width=True)
+            _safe_chart(fig, key="cli_chart_3")
 
         spacer(8)
 
         # Row 2 ─ Répartition géographique | Encaissé vs Impayé | Retours par client
-        r2c1, r2c2, r2c3 = st.columns([1.0, 0.8, 0.7])
+        _, r2c1, r2c2, r2c3, _ = st.columns([0.04, 1.0, 0.8, 0.7, 0.04])
         with r2c1:
             _cli_section_title("Répartition géographique")
             try:
-                vp = Path(__file__).parent / "villes.json"
-                if vp.exists():
-                    import json as _j
-                    with open(vp, "r", encoding="utf-8") as _f:
-                        _vd = _j.load(_f)
-                    _vdf = pd.DataFrame(_vd)
-                    _vdf["ville_norm"] = (_vdf["ville"].astype(str).str.strip()
-                                          .str.normalize("NFKD")
-                                          .str.encode("ascii", "ignore")
-                                          .str.decode("ascii").str.lower())
-                    _rmap = {"1": "Tanger-Tétouan-Al Hoceïma", "2": "Oriental",
-                             "3": "Fès-Meknès", "4": "Rabat-Salé-Kénitra",
-                             "5": "Béni Mellal-Khénifra", "6": "Casablanca-Settat",
-                             "7": "Marrakech-Safi", "8": "Drâa-Tafilalet",
-                             "9": "Souss-Massa", "10": "Guelmim-Oued Noun",
-                             "11": "Laâyoune-Sakia El Hamra", "12": "Dakhla-Oued Ed-Dahab"}
-                    _vdf["region_nom"] = _vdf["region"].astype(str).map(_rmap)
+                _cli_has_geo, _cli_vdf, _cli_rmap, _ = load_geo_data()
+                if _cli_has_geo and not _cli_vdf.empty:
                     _ct = cli[["id", "address"]].copy()
                     _ct["city_raw"] = (_ct["address"].fillna("").astype(str)
                                        .str.split(",").str[-1].str.strip())
@@ -3100,7 +3044,7 @@ if section == "Clients":
                                         .str.normalize("NFKD")
                                         .str.encode("ascii", "ignore")
                                         .str.decode("ascii"))
-                    _mrg = _ct.merge(_vdf[["ville_norm", "region_nom"]],
+                    _mrg = _ct.merge(_cli_vdf[["ville_norm", "region_nom"]],
                                      left_on="city_norm", right_on="ville_norm",
                                      how="left")
                     _rc = _mrg["region_nom"].fillna("Autre").value_counts().head(10).to_frame("clients").reset_index()
@@ -3131,12 +3075,12 @@ if section == "Clients":
                     if any(_mask):
                         fig.update_traces(marker=dict(opacity=[1.0 if m else 0.15 for m in _mask]),
                                           selector=dict(type="bar"))
-                fig = _cli_style_fig(fig)
+                fig = _cli_style_fig(fig, _CHART_H)
                 fig.update_traces(selector=dict(type="bar"), textposition="inside")
-                st.plotly_chart(fig, key="cli_chart_4",
-                                use_container_width=True)
+                _safe_chart(fig, key="cli_chart_4"
+)
             except Exception:
-                st.info("Données géographiques non disponibles.")
+                _safe_chart(None, key="cli_chart_4")
 
         with r2c2:
             _cli_section_title("Encaissé vs Impayé")
@@ -3164,19 +3108,19 @@ if section == "Clients":
                     fig.add_annotation(text=f"<b>Total</b><br>{_fmt(total_sales)}", showarrow=False,
                                        font=dict(size=11, color=CL_INK, family="Inter, sans-serif"),
                                        x=0.5, y=0.5)
-                    fig = _cli_style_fig(fig, pie=True)
+                    fig = _cli_style_fig(fig, _CHART_H, pie=True)
                     fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5))
-                    st.plotly_chart(fig, key="cli_chart_8",
-                                    use_container_width=True)
+                    _safe_chart(fig, key="cli_chart_8"
+)
                 else:
-                    st.info("Aucune donnée.")
+                    _safe_chart(None, key="cli_chart_8")
             except Exception:
-                st.info("Données indisponibles.")
+                _safe_chart(None, key="cli_chart_8")
 
         with r2c3:
             _cli_section_title("Retours par client")
             if exclude_refunded:
-                st.info("Aucun retour.")
+                _safe_chart(None, key="cli_chart_5")
             else:
                 try:
                     rf = in_period(data["Refunds"], "created_at", start_dt, end_dt).copy() if "Refunds" in data else pd.DataFrame()
@@ -3195,14 +3139,14 @@ if section == "Clients":
                             fig = px.treemap(rr_agg, path=["name"], values="retours",
                                              color_discrete_sequence=CL_BI)
                             fig.update_traces(textinfo="label+value", textfont=dict(size=13, color=CL_INK))
-                            st.plotly_chart(_cli_style_fig(fig), key="cli_chart_5",
-                                            use_container_width=True)
+                            _safe_chart(_cli_style_fig(fig, _CHART_H), key="cli_chart_5"
+)
                         else:
-                            st.info("Aucun retour.")
+                            _safe_chart(None, key="cli_chart_5_b")
                     else:
-                        st.info("Aucun retour.")
-                except Exception as e:
-                    st.info(f"Retours non disponibles: {e}")
+                        _safe_chart(None, key="cli_chart_5_c")
+                except Exception:
+                    _safe_chart(None, key="cli_chart_5_d")
 
         spacer(8)
 
@@ -3235,12 +3179,12 @@ if section == "Clients":
                                       textfont=dict(size=13))
                     fig.update_layout(xaxis=dict(tickangle=45), coloraxis_showscale=False)
                     fig.update_yaxes(ticksuffix=" j")
-                    st.plotly_chart(_cli_style_fig(fig), key="cli_chart_7",
-                                    use_container_width=True)
+                    _safe_chart(_cli_style_fig(fig, _CHART_H), key="cli_chart_7"
+)
                 else:
-                    st.info("Aucune donnée de paiement.")
+                    _safe_chart(None, key="cli_chart_7")
             except Exception:
-                st.info("Délais non disponibles.")
+                _safe_chart(None, key="cli_chart_7")
 
         with r3c2:
             _cli_section_title("Fréquence d'achat")
@@ -3262,13 +3206,13 @@ if section == "Clients":
             if cli_fid:
                 _mask = list(freq["client_id"] == cli_fid)
                 fig.update_traces(marker=dict(opacity=[1.0 if m else 0.15 for m in _mask]))
-            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=6, t=20, b=4),
+            fig.update_layout(height=_CHART_H, margin=dict(l=10, r=10, t=30, b=6),
                 xaxis=dict(showgrid=True, gridcolor=_cli_grid, tickfont=dict(color=CL_MUTED), rangemode="tozero"),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=CL_MUTED), showgrid=False),
                 plot_bgcolor=CL_CARD, paper_bgcolor=CL_CARD, bargap=0.04, bargroupgap=0.02,
                 font=dict(family="Inter, sans-serif", size=11, color=CL_INK))
             fig.update_traces(cliponaxis=False)
-            st.plotly_chart(fig, key="cli_chart_6", use_container_width=True)
+            _safe_chart(fig, key="cli_chart_6")
 
 # 3. Stock & Achats — KPI + graphiques
 if section == "Stock & Achats":
@@ -3309,23 +3253,8 @@ if section == "Stock & Achats":
     spacer(8)
     kpi_container = st.empty()
 
-    # Coût unitaire par produit
-    pi_all_stock = data["PurchaseItems"].copy()
-    if not pi_all_stock.empty:
-        pi_all_stock["q"] = pd.to_numeric(pi_all_stock["quantity"], errors="coerce").fillna(0)
-        pi_all_stock["p"] = pd.to_numeric(pi_all_stock["price"], errors="coerce").fillna(0)
-        pi_all_stock["cost_total"] = pi_all_stock["q"] * pi_all_stock["p"]
-        pu_status_stock = data["Purchases"]["status"].fillna("").str.lower()
-        pu_ok_ids_stock = set(data["Purchases"].loc[pu_status_stock.isin(
-            ["pending", "confirmed", "received", "completed", "paid", "paye", "recu"]), "id"].unique())
-        pi_all_stock = pi_all_stock[pi_all_stock["purchase_id"].isin(pu_ok_ids_stock)]
-        _g_stock = pi_all_stock.groupby("product_id").agg(
-            cost_sum=("cost_total", "sum"), q_sum=("q", "sum")
-        ).reset_index()
-        _g_stock["unit_cost"] = np.where(_g_stock["q_sum"] > 0, _g_stock["cost_sum"] / _g_stock["q_sum"], 0)
-        cost_map_stock = dict(zip(_g_stock["product_id"], _g_stock["unit_cost"]))
-    else:
-        cost_map_stock = {}
+    # Coût unitaire par produit (shared cached)
+    cost_map_stock = compute_cost_map(data)
 
     def _stock_cogs(si: pd.DataFrame) -> pd.DataFrame:
         d = si.copy()
@@ -3363,7 +3292,7 @@ if section == "Stock & Achats":
                 col.markdown(_kpi_card_st(kpi["svg"], kpi["title"], kpi["value"]), unsafe_allow_html=True)
 
     display_kpis()
-    spacer(6)
+    spacer(12)
 
     # Filtre produit
     product_names = ["Tous"] + sorted(products["name"].dropna().unique())
@@ -3380,7 +3309,7 @@ if section == "Stock & Achats":
         pu_cur = pu_full.copy()
 
     display_kpis()
-    spacer(6)
+    spacer(12)
 
     # LIGNE 1 : Mouvements du stock | Entrées / sorties par catégorie
     nb_jours = (end_dt - start_dt).days
@@ -3418,18 +3347,19 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{x}<br>Entrées : <b>%{text}</b><extra></extra>",
             ))
+            _sorties_pos = agg["Sorties"].abs()
             fig_evo.add_trace(go.Bar(
-                x=_labels, y=agg["Sorties"],
+                x=_labels, y=_sorties_pos,
                 name="Sorties",
                 marker_color=ST_PRIMARY,
-                text=agg["Sorties"].apply(lambda v: _fmt(v) if v != 0 else ""),
+                text=_sorties_pos.apply(lambda v: _fmt(v) if v != 0 else ""),
                 textposition="inside",
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{x}<br>Sorties : <b>%{text}</b><extra></extra>",
             ))
             fig_evo.update_layout(
                 barmode="stack", bargap=0.2,
-                height=_CHART_H, margin=dict(l=4, r=4, t=6, b=18),
+                height=_CHART_H, margin=dict(l=10, r=10, t=10, b=36),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=ST_INK),
                 legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center", font=dict(size=10, color=ST_MUTED), bgcolor="rgba(0,0,0,0)"),
@@ -3440,9 +3370,9 @@ if section == "Stock & Achats":
                            tickfont=dict(size=9, color=ST_MUTED), rangemode="tozero"),
                 hovermode="x unified",
             )
-            st.plotly_chart(fig_evo, key="ch_fig_9", use_container_width=True)
+            _safe_chart(fig_evo, key="ch_fig_9")
         else:
-            st.info("Aucun mouvement sur la période.")
+            _safe_chart(None, key="ch_fig_9")
 
     with r1[1]:
         _st_section_title("Entrées et sorties par catégorie")
@@ -3486,6 +3416,7 @@ if section == "Stock & Achats":
         pivot["opacity_out"] = pivot["is_selected"].map({True: 1.0, False: 0.5})
 
         fig_io = go.Figure()
+        _out_abs = pivot["out"].abs()
         fig_io.add_trace(go.Bar(
             x=pivot["category_name"].astype(str),
             y=pivot["in"], name="Entrée",
@@ -3497,16 +3428,16 @@ if section == "Stock & Achats":
         ))
         fig_io.add_trace(go.Bar(
             x=pivot["category_name"].astype(str),
-            y=pivot["out"], name="Sorties",
+            y=_out_abs, name="Sorties",
             marker=dict(color=pivot["color_out"], opacity=pivot["opacity_out"], line=dict(color=ST_ACCENT, width=1)),
             width=0.28, offsetgroup="sorties", alignmentgroup="io",
-            text=pivot["out"].apply(lambda v: _fmt(v) if v != 0 else ""),
+            text=_out_abs.apply(lambda v: _fmt(v) if v != 0 else ""),
             textposition="outside", textfont=dict(size=13, color="#FFFFFF"),
             hovertemplate="<b>%{x}</b><br>Sorties : <b>%{text}</b><extra></extra>",
         ))
         fig_io.update_layout(
             barmode="group", bargap=0.3, bargroupgap=0.15,
-            height=_CHART_H, margin=dict(l=4, r=4, t=6, b=18),
+            height=_CHART_H, margin=dict(l=10, r=10, t=10, b=36),
             plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD,
             font=dict(family="Inter, sans-serif", size=11, color=ST_INK),
             legend=dict(orientation="h", yanchor="bottom", y=1.15,
@@ -3520,12 +3451,12 @@ if section == "Stock & Achats":
                        tickfont=dict(size=9, color=ST_MUTED)),
             hovermode="x unified",
         )
-        st.plotly_chart(fig_io, key="ch_fig_11", use_container_width=True)
+        _safe_chart(fig_io, key="ch_fig_11")
 
-    spacer(8)
+    spacer(12)
 
     # LIGNE 2 : Top 10 produits par valeur | Donut | Rotation
-    r2 = st.columns([1.0, 0.8, 0.8])
+    r2 = st.columns([1.0, 0.8, 0.7])
 
     with r2[0]:
         _st_section_title("Top 10 produits par valeur")
@@ -3557,9 +3488,9 @@ if section == "Stock & Achats":
                 hovertemplate="%{y}<br>%{customdata}<extra></extra>"
             ))
             fig.update_layout(yaxis=dict(autorange="reversed"), showlegend=False)
-            st.plotly_chart(_st_style_fig(fig), key="ch_fig_13", use_container_width=True)
+            _safe_chart(_st_style_fig(fig), key="ch_fig_13")
         else:
-            st.info("Aucun produit.")
+            _safe_chart(None, key="ch_fig_13")
 
     with r2[1]:
         _st_section_title("Valeur du stock par catégorie")
@@ -3579,19 +3510,19 @@ if section == "Stock & Achats":
                 hovertemplate="<b>%{label}</b><br>%{customdata} — %{percent}<extra></extra>",
             ))
             fig_donut.update_layout(
-                margin=dict(l=2, r=2, t=2, b=2),
+                margin=dict(l=6, r=6, t=6, b=6),
                 height=_CHART_H,
                 paper_bgcolor=ST_CARD,
                 plot_bgcolor=ST_CARD,
             )
-            st.plotly_chart(fig_donut, key="ch_fig_10", use_container_width=True)
+            _safe_chart(fig_donut, key="ch_fig_10")
         else:
-            st.info("Aucune donnée.")
+            _safe_chart(None, key="ch_fig_10")
 
     with r2[2]:
         _st_section_title("Rotation des produits")
         out_qty = (mv_cur[mv_cur["type"] == "out"]
-                   .groupby("product_id")["quantity"].sum()
+                   .groupby("product_id")["quantity"].sum().abs()
                    if not mv_cur.empty
                    else pd.Series(dtype=float))
         stock_rot = stock_view.copy()
@@ -3602,10 +3533,7 @@ if section == "Stock & Achats":
         stock_rot = stock_rot[stock_rot["rot"] > 0].copy()
 
         if stock_rot.empty:
-            if selected_product != "Tous":
-                st.info(f"Aucune donnée de rotation pour le produit **{selected_product}**.")
-            else:
-                st.info("Aucune donnée de rotation.")
+            _safe_chart(None, key="ch_fig_rot")
         else:
             stock_rot = stock_rot.nlargest(10, "rot").copy()
             max_rot = stock_rot["rot"].max() if stock_rot["rot"].max() > 0 else 1
@@ -3655,14 +3583,14 @@ if section == "Stock & Achats":
             fig_tm.update_layout(
                 margin=dict(l=0, r=0, t=0, b=0),
                 height=_CHART_H,
-                font=dict(family="Inter, sans-serif", size=9),
+                font=dict(family="Inter, sans-serif", size=10),
             )
-            st.plotly_chart(_st_style_fig(fig_tm, _CHART_H), key="ch_fig_12", use_container_width=True)
+            _safe_chart(_st_style_fig(fig_tm, _CHART_H), key="ch_fig_12")
 
-    spacer(8)
+    spacer(12)
 
     # LIGNE 3 : Retours | Produits sous seuil | Alertes
-    r3 = st.columns([1.0, 0.8, 0.8])
+    r3 = st.columns([1.0, 0.8, 0.7])
     with r3[0]:
         _st_section_title("Nombre de retours par produit")
         si_period = data["SaleItems"].copy()
@@ -3722,9 +3650,9 @@ if section == "Stock & Achats":
                 margin=dict(l=10, r=20, t=10, b=50),
                 hovermode="y",
             )
-            st.plotly_chart(_st_style_fig(fig), key="ch_fig_14", use_container_width=True)
+            _safe_chart(_st_style_fig(fig), key="ch_fig_14")
         else:
-            st.info("Aucun retour sur la période.")
+            _safe_chart(None, key="ch_fig_14")
 
     with r3[1]:
         _st_section_title("Produits sous seuil critique")
@@ -3748,15 +3676,15 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: %{text}<extra></extra>"
             ))
-            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=6, b=4),
+            fig.update_layout(height=_CHART_H, margin=dict(l=10, r=30, t=8, b=6),
                 xaxis=dict(showgrid=True, gridcolor=ST_GRID, tickfont=dict(color=ST_MUTED), range=[0, max_s * 1.3]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=ST_MUTED), showgrid=False),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD, bargap=0.4,
                 font=dict(family="Inter, sans-serif", size=11, color=ST_INK))
             fig.update_traces(cliponaxis=False)
-            st.plotly_chart(fig, key="ch_fig_15", use_container_width=True)
+            _safe_chart(fig, key="ch_fig_15")
         else:
-            st.info("Aucun produit critique.")
+            _safe_chart(None, key="ch_fig_15")
 
     with r3[2]:
         _st_section_title("Alertes de réapprovisionnement")
@@ -3780,15 +3708,15 @@ if section == "Stock & Achats":
                 textfont=dict(size=13, color="#FFFFFF"),
                 hovertemplate="%{y}: %{text}<extra></extra>"
             ))
-            fig.update_layout(height=_CHART_H, margin=dict(l=6, r=20, t=6, b=4),
+            fig.update_layout(height=_CHART_H, margin=dict(l=10, r=30, t=8, b=6),
                 xaxis=dict(showgrid=True, gridcolor=ST_GRID, tickfont=dict(color=ST_MUTED), range=[0, max_s * 1.3]),
                 yaxis=dict(autorange="reversed", tickfont=dict(size=9, color=ST_MUTED), showgrid=False),
                 plot_bgcolor=ST_CARD, paper_bgcolor=ST_CARD, bargap=0.4,
                 font=dict(family="Inter, sans-serif", size=11, color=ST_INK))
             fig.update_traces(cliponaxis=False)
-            st.plotly_chart(fig, key="ch_fig_16", use_container_width=True)
+            _safe_chart(fig, key="ch_fig_16")
         else:
-            st.info("Aucune alerte de stock.")
+            _safe_chart(None, key="ch_fig_16")
 
 # 4. Trésorerie — Analyse financière
 if section == "Trésorerie":
@@ -4027,7 +3955,7 @@ if section == "Trésorerie":
     var_txt = f"{var_sign}{variation_pct:.1f}%"
     c5.markdown(_kpi_card_tr(tr_var_svg, "Variation trésorerie", var_txt), unsafe_allow_html=True)
 
-    spacer(6)
+    spacer(12)
 
     bfr_mois_abrev = {
         1: "Jan", 2: "Fév", 3: "Mar", 4: "Avr",
@@ -4042,7 +3970,7 @@ if section == "Trésorerie":
         return d.values
 
     # ROW 1 : Pilotage
-    r1c1, r1c2 = st.columns([1, 1])
+    _, r1c1, r1c2, _ = st.columns([0.04, 1, 1, 0.04])
 
     # Évolution du solde
     with r1c1:
@@ -4058,16 +3986,16 @@ if section == "Trésorerie":
                 x=x_vals, y=monthly_df["solde"],
                 mode="lines+markers",
                 line=dict(color=TR_PRIMARY, width=3, shape="spline"),
-                fill="tozeroy", fillcolor="rgba(6,182,212,0.12)",
+                fill="tozeroy", fillcolor="rgba(17,141,255,0.12)",
                 marker=dict(size=6, color=TR_PRIMARY, line=dict(color=TR_CARD, width=1)),
                 customdata=[_fmt(v) for v in monthly_df["solde"]],
                 hovertemplate="%{x}<br>Solde : <b>%{customdata}</b><extra></extra>"
             ))
             fig.add_hline(y=0, line_dash="dot", line_color=TR_NEGATIVE, opacity=0.4)
             _fmt_ticks(fig, "y")
-            st.plotly_chart(_tr_style_fig(fig), key="tr_chart_1", use_container_width=True)
+            _safe_chart(_tr_style_fig(fig, _CHART_H), key="tr_chart_1")
         else:
-            st.info("Aucune donnée de trésorerie.")
+            _safe_chart(None, key="tr_chart_1", height=_CHART_H)
 
     # Encaissements vs Décaissements
     with r1c2:
@@ -4103,10 +4031,10 @@ if section == "Trésorerie":
             ))
             fig.update_layout(
                 barmode="group", bargap=0.3, bargroupgap=0.15,
-                height=_CHART_H, margin=dict(l=4, r=4, t=22, b=18),
-                plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
-                font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
-                legend=dict(orientation="h", yanchor="bottom", y=1.04,
+            height=_CHART_H, margin=dict(l=10, r=10, t=40, b=36),
+            plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
+            font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
+            legend=dict(orientation="h", yanchor="bottom", y=1.04,
                             xanchor="center", x=0.5, font=dict(size=10, color=TR_MUTED)),
                 xaxis=dict(type="category", categoryorder="array",
                            categoryarray=monthly_df["mois_abr"].tolist(),
@@ -4118,14 +4046,14 @@ if section == "Trésorerie":
                 hovermode="x unified",
             )
             _fmt_ticks(fig, "y")
-            st.plotly_chart(fig, key="tr_chart_2", use_container_width=True)
+            _safe_chart(fig, key="tr_chart_2")
         else:
-            st.info("Aucune donnée.")
+            _safe_chart(None, key="tr_chart_2", height=_CHART_H)
 
-    spacer(8)
+    spacer(12)
 
     # ROW 2 : Analyse des flux
-    r3c1, r3c2, r3c3 = st.columns([1.0, 0.8, 0.8])
+    _, r3c1, r3c2, r3c3, _ = st.columns([0.04, 1.0, 0.8, 0.7, 0.04])
 
     # Classement des sorties d'argent
     with r3c1:
@@ -4142,9 +4070,6 @@ if section == "Trésorerie":
                 "Fourn. #" + spend["supplier_id"].astype(str))
             spend["supplier_name"] = spend["supplier_name"].astype(str).str.strip()
             spend = spend.sort_values("purchase_total", ascending=False).head(10)
-            if spend.empty:
-                st.info("Aucune dépense valide sur la période.")
-                st.stop()
             names_clean = spend["supplier_name"].tolist()
             vals_raw = spend["purchase_total"].tolist()
             labels_raw = [_fmt(v) for v in vals_raw]
@@ -4163,7 +4088,7 @@ if section == "Trésorerie":
             ))
             fig_spend.update_layout(
                 height=_CHART_H,
-                margin=dict(l=4, r=60, t=4, b=4),
+                margin=dict(l=8, r=80, t=8, b=6),
                 paper_bgcolor=TR_CARD,
                 plot_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
@@ -4183,9 +4108,9 @@ if section == "Trésorerie":
                 hovermode="y unified",
                 bargap=0.35,
             )
-            st.plotly_chart(fig_spend, key="tr_chart_3_spend", use_container_width=True)
+            _safe_chart(fig_spend, key="tr_chart_3_spend")
         else:
-            st.info("Aucune dépense sur la période.")
+            _safe_chart(None, key="tr_chart_3_spend", height=_CHART_H)
 
     # Répartition des flux
     with r3c2:
@@ -4215,10 +4140,10 @@ if section == "Trésorerie":
             ))
             fig6.update_layout(margin=dict(l=5, r=5, t=5, b=5))
             st.markdown('<div id="chart-tr6">', unsafe_allow_html=True)
-            st.plotly_chart(_tr_style_fig(fig6, height=_CHART_H, pie=True), key="tr_chart_6", on_select="ignore", use_container_width=True)
+            _safe_chart(_tr_style_fig(fig6, height=_CHART_H, pie=True), key="tr_chart_6")
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info("Pas assez de données.")
+            _safe_chart(None, key="tr_chart_6", height=_CHART_H)
 
     # BFR par mois
     with r3c3:
@@ -4254,7 +4179,7 @@ if section == "Trésorerie":
             ))
             fig.add_hline(y=0, line_dash="dot", line_color=TR_MUTED, opacity=0.4)
             fig.update_layout(
-                height=_CHART_H, margin=dict(l=6, r=6, t=6, b=4),
+                height=_CHART_H, margin=dict(l=10, r=10, t=8, b=6),
                 plot_bgcolor=TR_CARD, paper_bgcolor=TR_CARD,
                 font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
                 legend=dict(orientation="h", yanchor="bottom", y=1.04,
@@ -4268,14 +4193,14 @@ if section == "Trésorerie":
                 hovermode="x unified",
             )
             _fmt_ticks(fig, "y")
-            st.plotly_chart(fig, key="tr_chart_5", use_container_width=True)
+            _safe_chart(fig, key="tr_chart_5")
         else:
-            st.info("Pas assez de données pour le BFR.")
+            _safe_chart(None, key="tr_chart_5", height=_CHART_H)
 
-    spacer(8)
+    spacer(12)
 
     # ROW 4 : Prévision
-    r4c1, r4c2, r4c3 = st.columns([1.0, 0.8, 0.8])
+    _, r4c1, r4c2, r4c3, _ = st.columns([0.04, 1.0, 0.8, 0.7, 0.04])
 
     # Créances impayées cumulées
     with r4c1:
@@ -4317,13 +4242,13 @@ if section == "Trésorerie":
                 line=dict(color=TR_LIGHT, width=2.5, shape="spline"),
                 marker=dict(size=6, color=TR_LIGHT, symbol="diamond",
                             line=dict(color=TR_CARD, width=1)),
-                fill="tozeroy", fillcolor="rgba(6,182,212,0.10)",
+                fill="tozeroy", fillcolor="rgba(17,141,255,0.10)",
                 customdata=[_fmt(v) for v in unpaid],
                 hovertemplate="%{x}<br>Cumul créances : <b>%{customdata}</b><extra></extra>"
             ))
-            st.plotly_chart(_tr_style_fig(fig), key="tr_chart_3", use_container_width=True)
+            _safe_chart(_tr_style_fig(fig, _CHART_H), key="tr_chart_3")
         else:
-            st.info("Pas assez de données.")
+            _safe_chart(None, key="tr_chart_3", height=_CHART_H)
 
     # Prévision de trésorerie
     with r4c2:
@@ -4392,11 +4317,11 @@ if section == "Trésorerie":
                                 font=dict(size=9),
                                 itemsizing="constant"),
                 )
-                st.plotly_chart(fig_custom, key="tr_chart_7", use_container_width=True)
+                _safe_chart(fig_custom, key="tr_chart_7")
             else:
-                st.info("Pas assez de variabilité pour la prévision.")
+                _safe_chart(None, key="tr_chart_7_b", height=_CHART_H)
         else:
-            st.info("Minimum 3 mois d'historique requis.")
+            _safe_chart(None, key="tr_chart_7", height=_CHART_H)
 
     # Jauge de trésorerie
     with r4c3:
@@ -4443,12 +4368,11 @@ if section == "Trésorerie":
             }
         ))
         fig.update_layout(
-            height=_CHART_H, margin=dict(l=6, r=6, t=4, b=4),
+            height=_CHART_H + 40, margin=dict(l=10, r=10, t=6, b=6),
             paper_bgcolor=TR_CARD,
             font=dict(family="Inter, sans-serif", size=11, color=TR_INK),
         )
-        st.plotly_chart(fig, key="tr_chart_8", use_container_width=True,
-                        config=TR_CONFIG)
+        st.plotly_chart(fig, key="tr_chart_8", use_container_width=True)
 
 # 5. AI Agent
 if section == "AI Agent":
@@ -4460,6 +4384,21 @@ if section == "AI Agent":
 
     # Clé API
     OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", "")
+    if not OPENROUTER_API_KEY:
+        try:
+            import tomllib
+            with open(".streamlit/secrets.toml", "rb") as _f:
+                _sec = tomllib.load(_f)
+            OPENROUTER_API_KEY = _sec.get("OPENROUTER_API_KEY", "")
+        except Exception:
+            pass
+    if not OPENROUTER_API_KEY:
+        try:
+            import toml
+            _sec = toml.load(".streamlit/secrets.toml")
+            OPENROUTER_API_KEY = _sec.get("OPENROUTER_API_KEY", "")
+        except Exception:
+            pass
 
     # État de session
     if "ai_messages" not in st.session_state:
